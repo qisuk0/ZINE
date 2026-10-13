@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Open ZINE editor",
+			"type": "shell",
+			"command": "Start-Process",
+			"args": [
+				"\"${file}\""
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

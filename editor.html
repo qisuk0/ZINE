@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f2f9" />
+  <title>手账编辑 - ZINE集</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f4f2f9;
+      --card: #ffffff;
+      --paper: #e7e3f2;
+      --text: #1c1a22;
+      --text-sub: #9a97a6;
+      --purple: #7165a8;
+      --purple-soft: #dcd6ee;
+      --radius: 20px;
+      --ink-warm: #665746;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .editor {
+      width: min(100%, 480px);
+      height: 100vh;
+      height: 100dvh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      flex: 0 0 54px;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-bottom: 1px solid #eeeaf4;
+      background: var(--card);
+    }
+
+    .back-button {
+      width: 38px;
+      height: 38px;
+      border: 0;
+      background: transparent;
+      color: #514c59;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .title {
+      overflow: hidden;
+      color: var(--text);
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .done-button {
+      min-width: 54px;
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 15px;
+      background: var(--purple);
+      color: #fff;
+      font-size: 13px;
+      transition: filter 0.15s;
+    }
+
+    .done-button:hover {
+      filter: brightness(1.08);
+    }
+
+    .workspace {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 12px 10px 14px;
+      background:
+        radial-gradient(ellipse at 50% 44%, rgba(255, 255, 255, 0.9), transparent 72%),
+        #efedf3;
+    }
+
+    .canvas {
+      position: relative;
+      width: min(100%, 430px, calc((100dvh - 260px) * 0.77));
+      flex: 0 1 auto;
+      aspect-ratio: 0.77;
+      overflow: hidden;
+      container-type: inline-size;
+      border: 1px solid rgba(142, 124, 88, 0.35);
+      border-radius: 13px;
+      background-color: #fffdf7;
+      background-image:
+        radial-gradient(rgba(170, 153, 118, 0.22) 0.65px, transparent 0.8px),
+        linear-gradient(90deg, transparent 49.5%, rgba(135, 116, 84, 0.04) 50%, transparent 50.5%);
+      background-size: 5px 5px, 100% 100%;
+      box-shadow:
+        0 2px 0 #dfd5c2,
+        0 5px 0 #e9e0d1,
+        0 12px 24px rgba(64, 53, 39, 0.18);
+      touch-action: none;
+    }
+
+    .page-controls {
+      flex: 0 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      color: var(--text-sub);
+      font-size: 12px;
+    }
+
+    .page-controls button {
+      width: 34px;
+      height: 30px;
+      border: 1px solid var(--purple-soft);
+      border-radius: 9px;
+      background: var(--card);
+      color: var(--purple);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .page-controls button:disabled {
+      color: #c7c3cf;
+      cursor: default;
+    }
+
+    .page-indicator {
+      min-width: 58px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .canvas::before {
+      position: absolute;
+      z-index: 0;
+      inset: 1.6%;
+      border: 1px solid rgba(177, 161, 126, 0.26);
+      border-radius: 6px;
+      content: "";
+      pointer-events: none;
+    }
+
+    .canvas-caption {
+      position: absolute;
+      z-index: 1;
+      top: 2.2%;
+      left: 42%;
+      color: #8e8068;
+      font: 700 2.4cqw Georgia, "Songti SC", serif;
+      letter-spacing: 0.13em;
+      pointer-events: none;
+    }
+
+    .el {
+      position: absolute;
+      z-index: 2;
+      user-select: none;
+      touch-action: none;
+      cursor: grab;
+      line-height: 1.15;
+    }
+
+    .el-text,
+    .el-note,
+    .el-label {
+      cursor: text;
+    }
+
+    .el-content {
+      display: block;
+      width: 100%;
+      min-height: 100%;
+      outline: none;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      user-select: text;
+      cursor: text;
+    }
+
+    .el-content:empty::before {
+      color: var(--text-sub);
+      content: attr(data-placeholder);
+      font: 12px "PingFang SC", "Microsoft YaHei", sans-serif;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .el.editing {
+      z-index: 8;
+      outline: 1.5px solid var(--purple);
+      outline-offset: 3px;
+      user-select: text;
+    }
+
+    .el:active {
+      cursor: grabbing;
+    }
+
+    .el.selected {
+      z-index: 5;
+      outline: 1.5px solid var(--purple);
+      outline-offset: 3px;
+    }
+
+    .handle {
+      position: absolute;
+      right: -7px;
+      bottom: -7px;
+      z-index: 6;
+      display: none;
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid var(--purple);
+      border-radius: 50%;
+      background: #fff;
+      cursor: nwse-resize;
+      touch-action: none;
+    }
+
+    .el.selected .handle {
+      display: block;
+    }
+
+    .rotate-handle {
+      position: absolute;
+      top: -27px;
+      left: 50%;
+      z-index: 7;
+      display: none;
+      width: 19px;
+      height: 19px;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--purple);
+      border-radius: 50%;
+      background: #fff;
+      color: var(--purple);
+      font-size: 15px;
+      line-height: 1;
+      cursor: grab;
+      touch-action: none;
+      transform: translateX(-50%);
+    }
+
+    .rotate-handle::after {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 1px;
+      height: 8px;
+      background: var(--purple);
+      content: "";
+      transform: translateX(-50%);
+    }
+
+    .el.selected .rotate-handle {
+      display: flex;
+    }
+
+    .el.editing .rotate-handle,
+    .el.editing .handle {
+      display: none;
+    }
+
+    .el-photo {
+      display: flex;
+      flex-direction: column;
+      padding: 1.5cqw 1.5cqw 5cqw;
+      border: 1px solid #e8e2d6;
+      background: #fff;
+      box-shadow: 0 1cqw 2.2cqw rgba(57, 46, 33, 0.2);
+    }
+
+    .el-photo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      flex: 1 1 auto;
+      min-height: 0;
+      background: #e9e4d9;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .el-photo-large {
+      padding-bottom: 5.5cqw;
+    }
+
+    .el-video {
+      overflow: hidden;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      background: #282532;
+      box-shadow: 0 1cqw 2.2cqw rgba(57, 46, 33, 0.24);
+    }
+
+    .editor-video-player {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #282532;
+      object-fit: cover;
+    }
+
+    .video-drag-handle {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      z-index: 4;
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: rgba(40, 37, 50, 0.72);
+      color: #fff;
+      font: 10px/1.2 "PingFang SC", "Microsoft YaHei", sans-serif;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .clip {
+      position: absolute;
+      top: -5%;
+      left: 42%;
+      z-index: 3;
+      width: 17%;
+      height: 12%;
+      border: 1px solid rgba(106, 105, 104, 0.35);
+      border-radius: 4px 4px 9px 9px;
+      background: linear-gradient(100deg, #b6b8b9, #f5f3ed 42%, #a4a7a8 78%, #e1dfd9);
+      box-shadow: 0 0.7cqw 1.1cqw rgba(54, 49, 43, 0.25);
+      transform: rotate(-8deg);
+      pointer-events: none;
+    }
+
+    .el-sticker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0.7cqw 1cqw rgba(69, 56, 41, 0.2));
+      font-size: 9cqw;
+    }
+
+    .el-washi {
+      height: 5.5cqw;
+      border-radius: 1cqw;
+      opacity: 0.82;
+      box-shadow: 0 0.6cqw 1cqw rgba(74, 63, 46, 0.12);
+    }
+
+    .el-text {
+      overflow-wrap: anywhere;
+      color: var(--ink-warm);
+      font: italic 4.3cqw/1.2 Georgia, "Songti SC", serif;
+      text-shadow: 0 1px rgba(255, 255, 255, 0.65);
+    }
+
+    .el-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.7cqw solid #fff9dd;
+      border-radius: 999px;
+      background: #f6dc75;
+      box-shadow: 0 0.8cqw 1.8cqw rgba(95, 76, 36, 0.23);
+      color: #765a35;
+      font-size: 4.4cqw;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+
+    .el-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.6cqw;
+      background: #fbf3cf;
+      box-shadow: 0 0.8cqw 1.8cqw rgba(75, 60, 35, 0.16);
+      color: #66553d;
+      font: italic 3.6cqw/1.25 Georgia, "Songti SC", serif;
+    }
+
+    .silver-star {
+      color: #e8cd73;
+      text-shadow: 0 0.5cqw #fff;
+    }
+
+    .status {
+      position: absolute;
+      right: 12px;
+      bottom: 8px;
+      left: 12px;
+      z-index: 7;
+      color: var(--purple);
+      font-size: 12px;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .status.error {
+      color: #a33b47;
+    }
+
+    .toolbar {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      flex: 0 0 auto;
+      padding: 7px 8px max(8px, env(safe-area-inset-bottom));
+      border-top: 1px solid #ebe7f1;
+      background: var(--card);
+    }
+
+    .asset-panel {
+      display: none;
+      min-height: 72px;
+      max-height: 112px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      margin-bottom: 5px;
+      padding: 7px 5px;
+      border-radius: 11px;
+      background: #f7f5fa;
+    }
+
+    .asset-panel.open {
+      display: block;
+    }
+
+    .asset-heading {
+      margin: 0 0 6px 2px;
+      color: var(--text-sub);
+      font-size: 10px;
+    }
+
+    .asset-list {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .asset {
+      flex: 0 0 auto;
+      min-width: 44px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--purple-soft);
+      border-radius: 9px;
+      background: var(--card);
+      font-size: 23px;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .asset:hover {
+      transform: translateY(-2px);
+      background: #f3f0f9;
+    }
+
+    .asset.washi-asset {
+      width: 62px;
+      min-width: 62px;
+      height: 21px;
+      border: 0;
+      border-radius: 4px;
+    }
+
+    .asset.text-asset {
+      padding: 0 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .asset.upload-asset {
+      width: 46px;
+      border-style: dashed;
+      color: var(--purple);
+    }
+
+    .tool-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      gap: 2px;
+    }
+
+    .tool {
+      min-width: 38px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      border: 0;
+      background: transparent;
+      color: #777382;
+      font-size: 9px;
+    }
+
+    .tool.active {
+      color: var(--purple);
+    }
+
+    .tool-icon {
+      height: 26px;
+      font-size: 21px;
+      line-height: 26px;
+    }
+
+    .editor-preview .toolbar {
+      display: none;
+    }
+
+    .editor-preview .el {
+      cursor: default;
+      outline: none;
+    }
+
+    .editor-preview .handle {
+      display: none !important;
+    }
+
+    @media (max-height: 560px) {
+      .canvas {
+        width: min(94%, calc((100dvh - 235px) * 0.77));
+      }
+
+      .toolbar {
+        padding-top: 4px;
+      }
+
+      .tool-icon {
+        height: 22px;
+        font-size: 18px;
+        line-height: 22px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="editor">
+    <header class="topbar">
+      <button class="back-button" type="button" data-action="back" aria-label="返回">←</button>
+      <h1 class="title" id="pageTitle">年糕 · 2025.06.14</h1>
+      <button class="done-button" type="button" data-action="done">完成</button>
+    </header>
+
+    <section class="workspace" aria-label="手账编辑画布">
+      <div class="canvas" id="canvas" aria-label="可编辑拼贴画布">
+        <span class="canvas-caption">ZINE · MY DAY</span>
+      </div>
+      <nav class="page-controls" aria-label="章节页面导航">
+        <button type="button" data-action="previous-page" aria-label="上一页">‹</button>
+        <span class="page-indicator" id="pageIndicator">1 / 5</span>
+        <button type="button" data-action="next-page" aria-label="下一页">›</button>
+      </nav>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <footer class="toolbar">
+      <section class="asset-panel" id="assetPanel" aria-label="素材面板">
+        <div class="asset-heading" id="assetHeading">贴纸素材</div>
+        <div class="asset-list" id="assetList"></div>
+      </section>
+      <div class="tool-row">
+        <button class="tool" type="button" data-panel="photo" aria-label="照片">
+          <span class="tool-icon">▧</span><span>照片</span>
+        </button>
+        <button class="tool" type="button" data-panel="video" aria-label="视频">
+          <span class="tool-icon">▷</span><span>视频</span>
+        </button>
+        <button class="tool active" type="button" data-panel="sticker" aria-label="贴纸">
+          <span class="tool-icon">✧</span><span>贴纸</span>
+        </button>
+        <button class="tool" type="button" data-panel="washi" aria-label="胶带">
+          <span class="tool-icon">◩</span><span>胶带</span>
+        </button>
+        <button class="tool" type="button" data-panel="text" aria-label="文字">
+          <span class="tool-icon">T</span><span>文字</span>
+        </button>
+        <button class="tool" type="button" data-action="undo" aria-label="撤销">
+          <span class="tool-icon">↶</span><span>撤销</span>
+        </button>
+        <button class="tool" type="button" data-action="redo" aria-label="重做">
+          <span class="tool-icon">↷</span><span>重做</span>
+        </button>
+      </div>
+      <input id="photoInput" type="file" accept="image/*" hidden />
+      <input id="videoInput" type="file" accept="video/*" hidden />
+    </footer>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const editor = document.querySelector(".editor");
+    const assetPanel = document.getElementById("assetPanel");
+    const assetHeading = document.getElementById("assetHeading");
+    const assetList = document.getElementById("assetList");
+    const photoInput = document.getElementById("photoInput");
+    const videoInput = document.getElementById("videoInput");
+    const status = document.getElementById("status");
+    const params = new URLSearchParams(window.location.search);
+    const bookId = params.get("book");
+    const bookTitle = params.get("title");
+    const chapterTitle = params.get("ch");
+    const pageTitle = document.getElementById("pageTitle");
+    const storageKey = bookId && chapterTitle
+      ? `zine_chapter_${encodeURIComponent(bookId)}_${encodeURIComponent(chapterTitle)}`
+      : "zine_editor_2025-06-14";
+
+    if (bookTitle && chapterTitle) {
+      pageTitle.textContent = `${bookTitle} · ${chapterTitle}`;
+      document.title = `${chapterTitle} - ${bookTitle} · ZINE集`;
+    }
+
+    const PAGE_COUNT = 5;
+    const pages = Array.from({ length: PAGE_COUNT }, () => []);
+    let elements = pages[0];
+    const history = [];
+    const future = [];
+    const pageIndicator = document.getElementById("pageIndicator");
+    const previousPageButton = document.querySelector('[data-action="previous-page"]');
+    const nextPageButton = document.querySelector('[data-action="next-page"]');
+    let selectedId = null;
+    let nextId = 1;
+    let currentPage = 0;
+    let activePanel = "sticker";
+    let statusTimer;
+    const videoUrls = new Map();
+    let mediaDbPromise;
+
+    function openMediaDb() {
+      if (!mediaDbPromise) {
+        mediaDbPromise = new Promise((resolve, reject) => {
+          const request = indexedDB.open("zine_media_v1", 1);
+          request.addEventListener("upgradeneeded", () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains("media")) {
+              db.createObjectStore("media", { keyPath: "id" });
+            }
+          });
+          request.addEventListener("success", () => resolve(request.result), { once: true });
+          request.addEventListener("error", () => reject(request.error || new Error("Unable to open media storage.")), { once: true });
+        });
+      }
+      return mediaDbPromise;
+    }
+
+    async function storeVideo(file, id) {
+      const db = await openMediaDb();
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction("media", "readwrite");
+        transaction.objectStore("media").put({ id, blob: file, name: file.name, type: file.type });
+        transaction.addEventListener("complete", resolve, { once: true });
+        transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to save the video.")), { once: true });
+        transaction.addEventListener("abort", () => reject(transaction.error || new Error("Video save was cancelled.")), { once: true });
+      });
+    }
+
+    async function getVideoUrl(id) {
+      if (videoUrls.has(id)) return videoUrls.get(id);
+      const db = await openMediaDb();
+      const record = await new Promise((resolve, reject) => {
+        const request = db.transaction("media", "readonly").objectStore("media").get(id);
+        request.addEventListener("success", () => resolve(request.result), { once: true });
+        request.addEventListener("error", () => reject(request.error || new Error("Unable to read the saved video.")), { once: true });
+      });
+      if (!record || !(record.blob instanceof Blob)) throw new Error("The saved video file is missing.");
+      const url = URL.createObjectURL(record.blob);
+      videoUrls.set(id, url);
+      return url;
+    }
+
+    function showStatus(message) {
+      status.textContent = message;
+      status.classList.toggle("error", message.startsWith("保存失败") || message.startsWith("读取存档失败"));
+      window.clearTimeout(statusTimer);
+      if (message) {
+        statusTimer = window.setTimeout(() => {
+          status.textContent = "";
+        }, 3500);
+      }
+    }
+
+    function cloneElements(source = elements) {
+      return source.map((element) => ({ ...element }));
+    }
+
+    function remember() {
+      history.push(cloneElements());
+      if (history.length > 50) history.shift();
+      future.length = 0;
+    }
+
+    function samplePhoto(sky, hills, caption) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 290">
+        <defs><linearGradient id="b" x2="0" y2="1"><stop stop-color="${sky}"/><stop offset="1" stop-color="#f4e9d8"/></linearGradient></defs>
+        <rect width="240" height="290" fill="url(#b)"/>
+        <circle cx="174" cy="66" r="28" fill="#f4d88e"/>
+        <path d="M0 179 65 99l55 69 39-49 81 89v82H0z" fill="${hills}"/>
+        <path d="M0 209q56-34 112 0t128-1v82H0z" fill="#a9b89a"/>
+        <path d="M0 236q63-25 123 1t117-4v57H0z" fill="#879d83"/>
+        <path d="M32 218v-34m0 12-12-12m12 21 13-15m147 15v-42m0 17-14-14m14 27 15-17" fill="none" stroke="#6e806d" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="54" cy="187" r="5" fill="#e8aeb3"/>
+        <circle cx="207" cy="171" r="5" fill="#eee0a3"/>
+        <text x="120" y="268" text-anchor="middle" fill="#fffdf7" font-family="sans-serif" font-size="14">${caption}</text>
+      </svg>`;
+      return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    }
+
+    function replaceLegacyCatPhoto(src) {
+      if (typeof src !== "string" || !src.startsWith("data:image/svg+xml,")) return src;
+      let svg;
+      try {
+        svg = decodeURIComponent(src.slice(src.indexOf(",") + 1));
+      } catch (error) {
+        console.error("Unable to decode a saved sample photo.", error);
+        return src;
+      }
+      if (!svg.includes("M53 125 48 53l61 42m22 0 61-42-5 72")) return src;
+      if (svg.includes("little moments")) return samplePhoto("#e3c6bc", "#cbaa9b", "little moments");
+      if (svg.includes("sweet memory")) return samplePhoto("#b9c9d4", "#a9b7a9", "sweet memory");
+      if (svg.includes("my favorite")) return samplePhoto("#ded4b9", "#b5b59a", "my favorite");
+      return samplePhoto("#c8d3c3", "#a8ba9e", "a lovely day");
+    }
+
+    function seedElements() {
+      const cozy = samplePhoto("#c8d3c3", "#a8ba9e", "a lovely day");
+      const blush = samplePhoto("#e3c6bc", "#cbaa9b", "little moments");
+      const blue = samplePhoto("#b9c9d4", "#a9b7a9", "sweet memory");
+      const cream = samplePhoto("#ded4b9", "#b5b59a", "my favorite");
+      const ids = [];
+
+      function seed(element) {
+        element.id = nextId++;
+        elements.push(element);
+        ids.push(element.id);
+      }
+
+      seed({ type: "photo", src: cozy, x: 7, y: 14, w: 24, h: 17, rot: -2 });
+      seed({ type: "photo", src: blush, x: 7, y: 35, w: 24, h: 17, rot: 1 });
+      seed({ type: "photo", src: blue, x: 7, y: 56, w: 24, h: 17, rot: -1.5 });
+      seed({ type: "photo", src: cream, x: 7, y: 77, w: 24, h: 17, rot: 1.5 });
+      seed({ type: "photo", src: cozy, x: 56, y: 20, w: 37, h: 32, rot: 1, large: true });
+      seed({ type: "washi", color: "#d9c995", x: 31, y: 8, w: 19, h: 5, rot: -3 });
+      seed({ type: "note", content: "Let my love,", x: 36, y: 40, w: 24, h: 10, rot: -3 });
+      seed({ type: "sticker", content: "⭐", x: 51, y: 13, w: 9, h: 9, rot: 8 });
+      seed({ type: "sticker", content: "💛", x: 34, y: 13, w: 8, h: 8, rot: -7 });
+      seed({ type: "sticker", content: "💗", x: 43, y: 13, w: 8, h: 8, rot: 4 });
+      seed({ type: "label", content: "LUCK", x: 43, y: 57, w: 25, h: 9, rot: 2 });
+      seed({ type: "sticker", content: "💜", x: 82, y: 57, w: 8, h: 8, rot: 3 });
+      seed({ type: "sticker", content: "⭐", x: 53, y: 72, w: 8, h: 8, rot: -7 });
+      seed({ type: "sticker", content: "🎧", x: 65, y: 68, w: 13, h: 12, rot: -5 });
+      seed({ type: "sticker", content: "☁️", x: 83, y: 70, w: 11, h: 9, rot: 0 });
+      seed({ type: "sticker", content: "☕", x: 77, y: 80, w: 16, h: 16, rot: 4 });
+      seed({ type: "washi", color: "#edc3b8", x: 34, y: 89, w: 17, h: 5, rot: 2 });
+
+      selectedId = ids[10];
+    }
+
+    function makeElementNode(element) {
+      const node = document.createElement("div");
+      node.className = `el el-${element.type}`;
+      node.dataset.id = String(element.id);
+      node.style.left = `${element.x}%`;
+      node.style.top = `${element.y}%`;
+      node.style.width = `${element.w}%`;
+      node.style.transform = `rotate(${element.rot || 0}deg)`;
+
+      if (element.type === "photo") {
+        node.style.height = `${element.h}%`;
+        if (element.large) node.classList.add("el-photo-large");
+        const image = document.createElement("img");
+        image.src = element.src;
+        image.alt = "拼贴照片";
+        node.append(image);
+        if (element.large) {
+          const clip = document.createElement("span");
+          clip.className = "clip";
+          clip.setAttribute("aria-hidden", "true");
+          node.append(clip);
+        }
+      } else if (element.type === "video") {
+        node.style.height = `${element.h}%`;
+        const player = document.createElement("video");
+        player.className = "editor-video-player";
+        player.controls = true;
+        player.playsInline = true;
+        player.preload = "metadata";
+        player.setAttribute("aria-label", element.name ? `播放视频：${element.name}` : "播放视频");
+        player.addEventListener("error", () => showStatus("视频无法播放，请检查文件格式"), { once: true });
+        getVideoUrl(element.videoId).then((url) => {
+          if (node.isConnected) player.src = url;
+        }).catch((error) => {
+          console.error("Unable to load the saved video.", error);
+          if (node.isConnected) showStatus("读取视频失败，请重新添加视频");
+        });
+        node.append(player);
+        const dragHandle = document.createElement("span");
+        dragHandle.className = "video-drag-handle";
+        dragHandle.textContent = "拖动";
+        node.append(dragHandle);
+      } else if (element.type === "sticker") {
+        node.style.height = `${element.h}%`;
+        node.style.fontSize = `${element.w * 0.7}cqw`;
+        node.textContent = element.content;
+        if (element.content === "⭐") node.classList.add("silver-star");
+      } else if (element.type === "washi") {
+        node.style.height = `${element.h}%`;
+        node.style.backgroundColor = element.color;
+      } else {
+        node.style.minHeight = `${element.h}%`;
+        const content = document.createElement("span");
+        content.className = "el-content";
+        content.textContent = element.content;
+        content.title = "双击编辑文字";
+        if (!element.content) content.dataset.placeholder = "双击输入文字";
+        node.append(content);
+      }
+
+      const handle = document.createElement("span");
+      handle.className = "handle";
+      handle.setAttribute("aria-hidden", "true");
+      node.append(handle);
+      const rotateHandle = document.createElement("span");
+      rotateHandle.className = "rotate-handle";
+      rotateHandle.setAttribute("role", "button");
+      rotateHandle.setAttribute("aria-label", "旋转元素");
+      rotateHandle.textContent = "↻";
+      node.append(rotateHandle);
+      return node;
+    }
+
+    function render() {
+      canvas.querySelectorAll(".el").forEach((node) => node.remove());
+      elements.forEach((element) => {
+        const node = makeElementNode(element);
+        if (element.id === selectedId) node.classList.add("selected");
+        canvas.append(node);
+      });
+      pageIndicator.textContent = `${currentPage + 1} / ${PAGE_COUNT}`;
+      previousPageButton.disabled = currentPage === 0;
+      nextPageButton.disabled = currentPage === PAGE_COUNT - 1;
+    }
+
+    function addElement(element) {
+      remember();
+      element.id = nextId++;
+      element.x = element.x ?? 38;
+      element.y = element.y ?? 41;
+      element.w = element.w ?? 12;
+      element.h = element.h ?? 10;
+      element.rot = element.rot ?? (Math.random() * 8 - 4);
+      elements.push(element);
+      selectedId = element.id;
+      render();
+      save(true);
+    }
+
+    function updateBookEditedAt() {
+      if (!bookId) return true;
+      try {
+        const stored = localStorage.getItem("zine_books_v1");
+        if (stored === null) throw new Error("Saved books data is missing.");
+        const savedBooks = JSON.parse(stored);
+        if (!Array.isArray(savedBooks)) throw new Error("Saved books data must be an array.");
+        const book = savedBooks.find((item) => item && item.id === Number(bookId));
+        if (!book) throw new Error(`Book ${bookId} was not found.`);
+        book.lastEditedAt = Date.now();
+        localStorage.setItem("zine_books_v1", JSON.stringify(savedBooks));
+        return true;
+      } catch (error) {
+        console.error("Unable to update the book's edit order.", error);
+        return false;
+      }
+    }
+
+    function save(markEdited = false) {
+      try {
+        pages[currentPage] = cloneElements();
+        localStorage.setItem(storageKey, JSON.stringify({ version: 2, pages }));
+        const editOrderSaved = !markEdited || updateBookEditedAt();
+        showStatus(editOrderSaved ? "已自动保存" : "页面已保存，但编辑顺序更新失败");
+        return true;
+      } catch (error) {
+        console.error("Unable to save the journal page.", error);
+        showStatus("保存失败：浏览器存储空间不足");
+        return false;
+      }
+    }
+
+    function load() {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved === null) {
+          seedElements();
+          pages[0] = cloneElements();
+          return;
+        }
+        const parsed = JSON.parse(saved);
+        const validTypes = ["photo", "video", "sticker", "washi", "text", "note", "label"];
+        const validatePage = (savedPage) => {
+          if (!Array.isArray(savedPage)) throw new Error("Saved page data must be an array.");
+          return savedPage.filter((item) =>
+            item
+            && Number.isInteger(item.id)
+            && validTypes.includes(item.type)
+            && Number.isFinite(item.x)
+            && Number.isFinite(item.y)
+            && Number.isFinite(item.w)
+            && Number.isFinite(item.h)
+          ).map((item) => item.type === "photo"
+            ? { ...item, src: replaceLegacyCatPhoto(item.src) }
+            : { ...item });
+        };
+
+        if (Array.isArray(parsed)) {
+          pages[0] = validatePage(parsed);
+        } else if (parsed && Array.isArray(parsed.pages)) {
+          parsed.pages.slice(0, PAGE_COUNT).forEach((savedPage, index) => {
+            pages[index] = validatePage(savedPage);
+          });
+        } else {
+          throw new Error("Saved journal page data has an invalid format.");
+        }
+
+        elements = pages[0];
+        nextId = pages.flat().reduce((max, item) => Math.max(max, item.id), 0) + 1;
+      } catch (error) {
+        console.error("Unable to load the saved journal page.", error);
+        pages.forEach((page) => page.splice(0, page.length));
+        elements = pages[0];
+        seedElements();
+        pages[0] = cloneElements();
+        showStatus("读取存档失败，已载入示例页面");
+      }
+    }
+
+    function changePage(direction) {
+      const nextPage = currentPage + direction;
+      if (nextPage < 0 || nextPage >= PAGE_COUNT) return;
+      if (!save()) return;
+      currentPage = nextPage;
+      elements = pages[currentPage];
+      selectedId = null;
+      history.length = 0;
+      future.length = 0;
+      render();
+    }
+
+    function finishTextEdit(content, element, original, previousElements, cancelled) {
+      content.contentEditable = "false";
+      content.removeAttribute("aria-label");
+      content.closest(".el").classList.remove("editing");
+
+      if (cancelled) {
+        element.content = original;
+        content.textContent = original;
+        return;
+      }
+
+      const updated = content.textContent.replace(/\r/g, "");
+      if (updated === original) return;
+      element.content = updated;
+      if (updated) {
+        delete content.dataset.placeholder;
+      } else {
+        content.dataset.placeholder = "双击输入文字";
+      }
+      history.push(previousElements);
+      if (history.length > 50) history.shift();
+      future.length = 0;
+      save(true);
+    }
+
+    function beginTextEdit(content, element) {
+      if (content.contentEditable === "true") return;
+      const node = content.closest(".el");
+      selectedId = element.id;
+      canvas.querySelectorAll(".el.selected").forEach((selected) => {
+        selected.classList.remove("selected");
+      });
+      node.classList.add("selected", "editing");
+
+      const original = element.content;
+      const previousElements = cloneElements();
+      let cancelled = false;
+      content.contentEditable = "true";
+      content.spellcheck = false;
+      content.setAttribute("aria-label", "编辑文字，按 Enter 保存，按 Escape 取消");
+      content.focus();
+
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(content);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      content.addEventListener("keydown", (keyEvent) => {
+        if (keyEvent.key === "Enter" && !keyEvent.shiftKey) {
+          keyEvent.preventDefault();
+          content.blur();
+        } else if (keyEvent.key === "Escape") {
+          keyEvent.preventDefault();
+          cancelled = true;
+          content.blur();
+        }
+      });
+      content.addEventListener("blur", () => {
+        finishTextEdit(content, element, original, previousElements, cancelled);
+      }, { once: true });
+    }
+
+    canvas.addEventListener("dblclick", (event) => {
+      const content = event.target.closest(".el-content");
+      if (!content) return;
+      const node = content.closest(".el");
+      const element = elements.find((item) => item.id === Number(node.dataset.id));
+      if (!element) return;
+      event.preventDefault();
+      event.stopPropagation();
+      beginTextEdit(content, element);
+    });
+
+    function addAssetButton(label, type, value, className = "") {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `asset ${className}`.trim();
+      button.textContent = label;
+      button.dataset.assetType = type;
+      if (value) button.dataset.assetValue = value;
+      assetList.append(button);
+    }
+
+    function showPanel(name) {
+      activePanel = name;
+      assetList.replaceChildren();
+      document.querySelectorAll(".tool[data-panel]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.panel === name);
+      });
+
+      const names = {
+        photo: "添加照片",
+        video: "添加视频（最大 50 MB）",
+        sticker: "贴纸素材",
+        washi: "胶带素材",
+        text: "文字样式",
+      };
+      assetHeading.textContent = names[name] || "素材";
+
+      if (name === "photo") {
+        addAssetButton("＋", "upload", "", "upload-asset");
+        addAssetButton("🏞️", "photo", "sample");
+      } else if (name === "video") {
+        addAssetButton("＋ 选择视频", "video-upload", "", "text-asset");
+        const hint = document.createElement("span");
+        hint.textContent = "支持浏览器可播放的视频格式";
+        hint.style.cssText = "align-self:center;color:var(--text-sub);font-size:11px;";
+        assetList.append(hint);
+      } else if (name === "sticker") {
+        ["⭐", "❤️", "☁️", "🐾", "🌈", "🎀", "🎧", "☕"].forEach((content) => {
+          addAssetButton(content, "sticker", content);
+        });
+      } else if (name === "washi") {
+        ["#edc3c8", "#abc8e2", "#c8d8bb", "#f0d37d"].forEach((color) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "asset washi-asset";
+          button.style.backgroundColor = color;
+          button.setAttribute("aria-label", "添加胶带");
+          button.dataset.assetType = "washi";
+          button.dataset.assetValue = color;
+          assetList.append(button);
+        });
+      } else if (name === "text") {
+        addAssetButton("＋ 新建空白文字框", "text-empty", "", "text-asset");
+        ["Let my love,", "今天也很想你", "遇见你真好"].forEach((content) => {
+          addAssetButton(content, "text", content, "text-asset");
+        });
+      }
+
+      assetPanel.classList.add("open");
+    }
+
+    function closePanel() {
+      activePanel = "";
+      assetPanel.classList.remove("open");
+      document.querySelectorAll(".tool[data-panel]").forEach((button) => {
+        button.classList.remove("active");
+      });
+    }
+
+    assetList.addEventListener("click", (event) => {
+      const asset = event.target.closest(".asset[data-asset-type]");
+      if (!asset) return;
+
+      const { assetType, assetValue } = asset.dataset;
+      if (assetType === "upload") {
+        photoInput.click();
+      } else if (assetType === "video-upload") {
+        videoInput.click();
+      } else if (assetType === "photo" && assetValue === "sample") {
+        addElement({
+          type: "photo",
+          src: samplePhoto("#c8d3c3", "#a8ba9e", "a lovely day"),
+          w: 28,
+          h: 23,
+        });
+      } else if (assetType === "sticker") {
+        addElement({ type: "sticker", content: assetValue, w: 11, h: 11 });
+      } else if (assetType === "washi") {
+        addElement({ type: "washi", color: assetValue, w: 32, h: 6 });
+      } else if (assetType === "text") {
+        addElement({ type: "text", content: assetValue, w: 29, h: 9 });
+      } else if (assetType === "text-empty") {
+        addElement({ type: "text", content: "", w: 29, h: 10 });
+        const node = canvas.querySelector(`.el[data-id="${selectedId}"]`);
+        const content = node && node.querySelector(".el-content");
+        if (content) beginTextEdit(content, elements.find((item) => item.id === selectedId));
+      }
+    });
+
+    canvas.addEventListener("pointerdown", (event) => {
+      if (event.target.closest(".el-content[contenteditable='true']")) return;
+      if (event.target.closest(".el-video video")) return;
+      const node = event.target.closest(".el");
+      if (!node) {
+        selectedId = null;
+        render();
+        return;
+      }
+
+      event.preventDefault();
+      const element = elements.find((item) => item.id === Number(node.dataset.id));
+      if (!element) return;
+
+      canvas.querySelectorAll(".el.selected").forEach((selected) => {
+        selected.classList.remove("selected");
+      });
+      node.classList.add("selected");
+      selectedId = element.id;
+
+      const rotating = event.target.classList.contains("rotate-handle");
+      const resizing = event.target.classList.contains("handle");
+      if (element.type === "video" && !rotating && !resizing && !event.target.classList.contains("video-drag-handle")) return;
+      const bounds = canvas.getBoundingClientRect();
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const original = { ...element };
+      const nodeBounds = node.getBoundingClientRect();
+      const centerX = nodeBounds.left + nodeBounds.width / 2;
+      const centerY = nodeBounds.top + nodeBounds.height / 2;
+      const startAngle = Math.atan2(startY - centerY, startX - centerX) * (180 / Math.PI);
+      let moved = false;
+
+      function move(moveEvent) {
+        const dx = ((moveEvent.clientX - startX) / bounds.width) * 100;
+        const dy = ((moveEvent.clientY - startY) / bounds.height) * 100;
+
+        if (rotating) {
+          const angle = Math.atan2(moveEvent.clientY - centerY, moveEvent.clientX - centerX) * (180 / Math.PI);
+          element.rot = (original.rot || 0) + angle - startAngle;
+          node.style.transform = `rotate(${element.rot}deg)`;
+        } else if (resizing) {
+          element.w = Math.max(6, Math.min(85, original.w + dx));
+          if (element.type === "photo") {
+            const aspect = (original.w * bounds.width) / (original.h * bounds.height);
+            element.h = (element.w * bounds.width) / (aspect * bounds.height);
+          } else if (element.type === "sticker") {
+            element.h = Math.max(6, original.h + dy);
+          }
+          node.style.width = `${element.w}%`;
+          node.style.height = `${element.h}%`;
+          if (element.type === "sticker") {
+            node.style.fontSize = `${element.w * 0.7}cqw`;
+          }
+        } else {
+          element.x = Math.max(0, Math.min(100 - element.w, original.x + dx));
+          element.y = Math.max(0, Math.min(100 - element.h, original.y + dy));
+          node.style.left = `${element.x}%`;
+          node.style.top = `${element.y}%`;
+        }
+
+        moved = moved || dx !== 0 || dy !== 0;
+      }
+
+      function finish() {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", finish);
+        window.removeEventListener("pointercancel", finish);
+        if (!moved) return;
+        history.push(cloneElements().map((item) => item.id === element.id ? original : item));
+        if (history.length > 50) history.shift();
+        future.length = 0;
+        save(true);
+      }
+
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", finish);
+      window.addEventListener("pointercancel", finish);
+    });
+
+    editor.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action], button[data-panel]");
+      if (!button) return;
+
+      if (button.dataset.panel) {
+        const name = button.dataset.panel;
+        if (activePanel === name && assetPanel.classList.contains("open")) {
+          closePanel();
+        } else {
+          showPanel(name);
+        }
+        return;
+      }
+
+      if (button.dataset.action === "previous-page") {
+        changePage(-1);
+      } else if (button.dataset.action === "next-page") {
+        changePage(1);
+      } else if (button.dataset.action === "undo") {
+        if (!history.length) return;
+        future.push(cloneElements());
+        elements.splice(0, elements.length, ...history.pop());
+        selectedId = null;
+        render();
+        save(true);
+      } else if (button.dataset.action === "redo") {
+        if (!future.length) return;
+        history.push(cloneElements());
+        elements.splice(0, elements.length, ...future.pop());
+        selectedId = null;
+        render();
+        save(true);
+      } else if (button.dataset.action === "done") {
+        if (save()) window.history.back();
+      } else if (button.dataset.action === "back") {
+        save();
+        window.history.back();
+      }
+    });
+
+    photoInput.addEventListener("change", () => {
+      const file = photoInput.files && photoInput.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        showStatus("请选择图片文件");
+        photoInput.value = "";
+        return;
+      }
+      if (file.size > 3 * 1024 * 1024) {
+        showStatus("照片不能大于 3 MB");
+        photoInput.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        if (typeof reader.result !== "string") {
+          showStatus("读取照片失败");
+          return;
+        }
+        addElement({ type: "photo", src: reader.result, w: 29, h: 24 });
+      });
+      reader.addEventListener("error", () => showStatus("读取照片失败"));
+      reader.readAsDataURL(file);
+      photoInput.value = "";
+    });
+
+    videoInput.addEventListener("change", async () => {
+      const file = videoInput.files && videoInput.files[0];
+      videoInput.value = "";
+      if (!file) return;
+      if (!file.type.startsWith("video/")) {
+        showStatus("请选择视频文件");
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        showStatus("视频不能大于 50 MB");
+        return;
+      }
+
+      const videoId = `video-${bookId || "draft"}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      try {
+        await storeVideo(file, videoId);
+        videoUrls.set(videoId, URL.createObjectURL(file));
+        addElement({ type: "video", videoId, name: file.name, w: 38, h: 27 });
+      } catch (error) {
+        console.error("Unable to save the selected video.", error);
+        showStatus("视频保存失败，请检查浏览器存储空间");
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const modifier = event.ctrlKey || event.metaKey;
+      if (modifier && event.key.toLowerCase() === "z" && !event.shiftKey) {
+        event.preventDefault();
+        editor.querySelector('[data-action="undo"]').click();
+      } else if (modifier && (event.key.toLowerCase() === "y" || (event.key.toLowerCase() === "z" && event.shiftKey))) {
+        event.preventDefault();
+        editor.querySelector('[data-action="redo"]').click();
+      } else if (!modifier && (event.key === "Delete" || event.key === "Backspace") && selectedId !== null) {
+        event.preventDefault();
+        const selectedIndex = elements.findIndex((element) => element.id === selectedId);
+        if (selectedIndex === -1) return;
+        remember();
+        elements.splice(selectedIndex, 1);
+        selectedId = null;
+        render();
+        save(true);
+      }
+    });
+
+    load();
+    render();
+    showPanel("sticker");
+    save();
+
+    window.addEventListener("pagehide", save);
+    window.addEventListener("pagehide", () => {
+      videoUrls.forEach((url) => URL.revokeObjectURL(url));
+      videoUrls.clear();
+    }, { once: true });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") save();
+    });
+  </script>
+</body>
+</html>

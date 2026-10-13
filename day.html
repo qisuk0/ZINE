@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>日记 - ZINE集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="blank-page">
+    <a class="back-link" href="memoir.html">‹ 返回日历</a>
+    <main class="diary-page">
+      <header class="diary-header">
+        <div>
+          <p class="diary-eyebrow">MY JOURNAL</p>
+          <h1 id="diaryDate">写下这一天</h1>
+        </div>
+        <span class="diary-heart" aria-hidden="true">♥</span>
+      </header>
+      <label class="diary-label" for="diaryText">今天发生了什么？</label>
+      <textarea id="diaryText" maxlength="20000" placeholder="把今天的心情、故事或小小的瞬间写下来……"></textarea>
+      <p class="diary-status" id="diaryStatus" role="status" aria-live="polite"></p>
+    </main>
+  </div>
+  <script src="day.js"></script>
+</body>
+</html>

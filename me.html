@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我 - ZINE集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="me-page">
+    <a class="back-link" href="index.html">‹ 返回</a>
+    <header class="me-header">
+      <p class="diary-eyebrow">YOUR LITTLE JOURNAL</p>
+      <h1>我的</h1>
+      <p>把日常回望成一段温柔的故事。</p>
+    </header>
+
+    <main>
+      <section class="report-card" aria-labelledby="reportTitle">
+        <div class="report-heading">
+          <div>
+            <p class="report-eyebrow">MONTHLY REFLECTION</p>
+            <h2 id="reportTitle">本月日记总结</h2>
+          </div>
+          <span class="report-icon" aria-hidden="true">✧</span>
+        </div>
+        <p class="report-description" id="reportDescription"></p>
+        <button class="report-generate" id="generateReportBtn" type="button">✦ 生成 AI 总结报告</button>
+        <p class="report-status" id="reportStatus" role="status" aria-live="polite"></p>
+        <article class="report-result" id="reportResult" aria-live="polite" hidden></article>
+        <p class="report-privacy">生成时，本月日记内容会发送至 OpenAI API。API 密钥仅保存在后端环境变量中。</p>
+        <details class="report-setup">
+          <summary>首次使用：启用本地 AI 服务</summary>
+          <p>在项目目录打开 PowerShell，设置你自己的 API 密钥并启动后端；不要把密钥写进网页或发送到聊天中。</p>
+          <code>$env:OPENAI_API_KEY="你的 API 密钥"<br />python local_server.py</code>
+          <p>启动后请通过 <code>http://127.0.0.1:8765/me.html</code> 打开此页面。</p>
+        </details>
+      </section>
+    </main>
+
+    <nav class="tabbar">
+      <a class="tab" href="index.html">
+        <span class="tab-icon">◉</span>
+        <span>集</span>
+      </a>
+      <a class="tab" href="memoir.html">
+        <span class="tab-icon">▤</span>
+        <span>日历</span>
+      </a>
+      <a class="tab active" href="me.html">
+        <span class="tab-icon">👤</span>
+        <span>我</span>
+      </a>
+    </nav>
+  </div>
+  <script src="me.js"></script>
+</body>
+</html>

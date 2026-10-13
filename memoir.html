@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>日历 - ZINE集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="cal-page">
+    <!-- 顶部 -->
+    <header class="cal-header">
+      <h1 class="logo">日历</h1>
+    </header>
+
+    <!-- 年月导航：2000 - 2050 -->
+    <div class="cal-body">
+      <div class="cal-nav">
+        <button class="cal-arrow" id="prevMonth" aria-label="上个月">‹</button>
+        <div class="cal-label">
+          <select class="cal-select" id="yearSelect" aria-label="年份"></select>
+          <span class="cal-y">年</span>
+          <select class="cal-select" id="monthSelect" aria-label="月份"></select>
+          <span class="cal-y">月</span>
+        </div>
+        <button class="cal-arrow" id="nextMonth" aria-label="下个月">›</button>
+        <button class="cal-today-btn" id="todayBtn">回到今天</button>
+      </div>
+
+      <!-- 月历主体 -->
+      <div class="cal-card">
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <dialog class="anniversary-dialog" id="anniversaryDialog" aria-labelledby="anniversaryTitle">
+        <form id="anniversaryForm">
+          <h2 id="anniversaryTitle">标记纪念日</h2>
+          <p class="anniversary-date" id="anniversaryDate"></p>
+          <label for="anniversaryName">纪念日名称</label>
+          <input id="anniversaryName" type="text" maxlength="40" placeholder="例如：相识纪念日" required />
+          <div class="anniversary-actions">
+            <button class="anniversary-delete" id="deleteAnniversaryBtn" type="button" hidden>删除标记</button>
+            <span class="anniversary-spacer"></span>
+            <button class="anniversary-cancel" type="button" data-action="cancel-anniversary">取消</button>
+            <button class="anniversary-save" type="submit">保存</button>
+          </div>
+        </form>
+      </dialog>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="tabbar">
+      <a class="tab" href="index.html">
+        <span class="tab-icon">◉</span>
+        <span>集</span>
+      </a>
+      <a class="tab active" href="memoir.html">
+        <span class="tab-icon">▤</span>
+        <span>日历</span>
+      </a>
+      <a class="tab" href="me.html">
+        <span class="tab-icon">👤</span>
+        <span>我</span>
+      </a>
+    </nav>
+  </div>
+
+  <script src="calendar.js"></script>
+</body>
+</html>

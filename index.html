@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZINE集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部 -->
+    <header class="header">
+      <h1 class="logo">ZINE<span class="logo-zh">集</span></h1>
+      <div class="header-actions">
+        <input class="search-input" id="searchInput" type="search" maxlength="80" placeholder="搜索书名" aria-label="搜索书名" hidden />
+        <button class="icon-btn" id="searchBtn" type="button" aria-label="搜索" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 排列顺序 -->
+    <div class="filters">
+      <label class="chip sort-chip">
+        <span class="sr-only">排列顺序</span>
+        <select id="sortSelect" aria-label="排列顺序">
+          <option value="edited">编辑顺序</option>
+          <option value="name">名称排序</option>
+        </select>
+        <span class="chevron" aria-hidden="true"></span>
+      </label>
+    </div>
+
+    <!-- 书籍卡片列表 -->
+    <main class="book-list" id="bookList"></main>
+    <input id="coverInput" type="file" accept="image/*" hidden />
+
+    <!-- 创建新书 -->
+    <button class="create-box" id="createBookBtn" aria-label="创建新书">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <!-- 底部导航 -->
+    <nav class="tabbar">
+      <a class="tab active" href="index.html">
+        <span class="tab-icon">◉</span>
+        <span>集</span>
+      </a>
+      <a class="tab" href="memoir.html">
+        <span class="tab-icon">▤</span>
+        <span>日历</span>
+      </a>
+      <a class="tab" href="me.html">
+        <span class="tab-icon">👤</span>
+        <span>我</span>
+      </a>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

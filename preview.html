@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预览 - ZINE集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="pv-page">
+    <a class="pv-back" href="index.html">‹ 返回</a>
+
+    <div class="pv-stage">
+      <div class="book">
+        <div class="spread">
+          <div class="page page-left" id="pageLeft">
+            <div class="preview-content" id="pageContentLeft"></div>
+            <span class="page-no" id="pageNoLeft"></span>
+          </div>
+          <div class="page page-right" id="pageRight">
+            <div class="preview-content" id="pageContentRight"></div>
+            <span class="page-no" id="pageNoRight"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pv-data-status" id="previewStatus" role="status" aria-live="polite"></div>
+
+    <!-- 放大查看 -->
+    <div class="pv-zoom" id="zoomOverlay">
+      <div class="zoom-page" id="zoomPage"></div>
+    </div>
+  </div>
+
+  <script src="preview.js"></script>
+</body>
+</html>

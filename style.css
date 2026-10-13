@@ -1,0 +1,1471 @@
+/* ===== 全局 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f4f2f9;            /* 页面雾紫白 */
+  --card: #ffffff;
+  --paper: #e7e3f2;         /* 书页浅紫（淡、低饱和） */
+  --text: #1c1a22;
+  --text-sub: #9a97a6;
+  --purple: #7165a8;        /* 静谧明亮的紫 */
+  --purple-soft: #dcd6ee;   /* 浅紫分隔 */
+  --cover: #4f4569;         /* 书籍封面默认深紫 */
+  --radius: 20px;
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 24px 16px 110px;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ===== 顶部 ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  font-family: "Helvetica Neue", "PingFang SC", sans-serif;
+}
+
+/* “集”字点紫（视觉大小与 ZINE 一致），logo 下的渐变短横 */
+.logo-zh {
+  color: var(--purple);
+  font-size: 0.96em;
+}
+
+.logo::after {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #8a7cc0, #55496e);
+  margin-top: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header.search-open .logo {
+  display: none;
+}
+
+.header.search-open .header-actions {
+  flex: 1;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--purple-soft);
+  border-radius: 22px;
+  outline: none;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+}
+
+.search-input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.12);
+}
+
+.search-empty {
+  padding: 28px 12px;
+  color: var(--text-sub);
+  font-size: 14px;
+  text-align: center;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--purple-soft);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: #edeaf6;
+}
+
+/* ===== 排列顺序 ===== */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin: 26px 2px 20px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--purple-soft);
+  background: var(--card);
+  box-shadow: 0 1px 5px rgba(113, 101, 168, 0.1);
+  font-size: 12px;
+  color: var(--text);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.chip:hover {
+  box-shadow: 0 3px 10px rgba(113, 101, 168, 0.16);
+  transform: translateY(-1px);
+}
+
+.chip:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(113, 101, 168, 0.1);
+}
+
+.sort-chip {
+  position: relative;
+  cursor: pointer;
+}
+
+.sort-chip select {
+  padding: 0 14px 0 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sort-chip .chevron {
+  position: absolute;
+  right: 13px;
+  pointer-events: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+/* 实心小箭头 */
+.chip .chevron {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--purple);
+}
+
+/* ===== 书籍卡片（抽屉式横框，书页浅紫底色） ===== */
+.book-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.book-card {
+  background: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(113, 101, 168, 0.09);
+  padding: 16px;
+  overflow: hidden;
+}
+
+.book-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.book-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.book-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-bottom: 6px;
+}
+
+.book-title {
+  min-width: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: Georgia, "Songti SC", serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.edit-title-btn {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--purple);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.edit-title-btn:hover {
+  background: var(--purple-soft);
+}
+
+.book-title-input {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid var(--purple);
+  border-radius: 8px;
+  outline: none;
+  padding: 3px 8px;
+  background: var(--card);
+  color: var(--text);
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 16px;
+}
+
+.book-stats {
+  font-size: 11px;
+  color: #a09bb8;
+  line-height: 1.7;
+}
+
+/* 书籍封面（与日历“今日”同色） */
+.cover-wrap {
+  flex: 0 0 auto;
+  width: 76px;
+  height: 76px;
+  position: relative;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #8a7cc0, #6c5f9e);
+  box-shadow: 0 4px 10px rgba(113, 101, 168, 0.18);
+  transition: transform 0.15s;
+  background-position: center;
+  background-size: cover;
+}
+
+.cover:hover {
+  transform: scale(1.04);
+}
+
+.cover-edit {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 25px;
+  height: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background: rgba(49, 43, 69, 0.68);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.cover-edit:hover {
+  background: var(--purple);
+}
+
+/* 展开箭头 */
+.expand-btn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--purple);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s;
+}
+
+.expand-btn:hover {
+  background: rgba(93, 86, 128, 0.12);
+}
+
+.expand-btn.open {
+  transform: rotate(180deg);
+}
+
+/* 章节列表（展开区） */
+.chapters {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.chapters.open {
+  max-height: 400px;
+}
+
+.chapters ul {
+  list-style: none;
+  margin-top: 14px;
+  border-top: 1px solid var(--purple-soft);
+  padding-top: 8px;
+}
+
+.chapters li a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 6px;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+.chapters li a:hover {
+  background: #e1dbf0;
+}
+
+.chapters li a::after {
+  content: "›";
+  color: var(--purple);
+}
+
+/* 新建章节（列表最下方的小加号） */
+.add-chapter-row {
+  border-radius: 10px;
+}
+
+.add-chapter {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-sub);
+  border-radius: 10px;
+}
+
+.add-chapter:hover {
+  background: #e1dbf0;
+  color: var(--purple);
+}
+
+/* ===== 创建新书（与横框同宽、更扁，边框同搜索按钮） ===== */
+.create-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+  margin-top: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--purple-soft);
+  background: var(--card);
+  color: #9a97a6;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.create-box:hover {
+  background: #edeaf6;
+}
+
+/* ===== 底部导航 ===== */
+.tabbar {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 448px;
+  background: var(--card);
+  border: 1px solid rgba(220, 214, 238, 0.6);
+  border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(113, 101, 168, 0.16);
+  display: flex;
+  padding: 10px 0;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--text-sub);
+  font-size: 11px;
+}
+
+.tab-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tab:not(.active) .tab-icon {
+  filter: grayscale(1) opacity(0.45);
+}
+
+.tab.active {
+  color: var(--purple);
+  font-weight: 600;
+  position: relative;
+}
+
+/* 激活 tab 下方的小圆点 */
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--purple);
+}
+
+/* ===== 空白占位页 ===== */
+.blank-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.back-link {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--text-sub);
+  text-decoration: none;
+  margin-bottom: 24px;
+}
+
+.blank-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 60vh;
+  color: var(--text-sub);
+  font-size: 14px;
+}
+
+/* 占位页中央的紫色星形装饰 */
+.blank-body::before {
+  content: "✦";
+  font-size: 30px;
+  color: var(--purple-soft);
+}
+
+.diary-page {
+  padding: 20px;
+  border: 1px solid #e8e2f0;
+  border-radius: 20px;
+  background:
+    radial-gradient(rgba(170, 153, 118, 0.14) 0.65px, transparent 0.8px),
+    #fffefa;
+  background-size: 6px 6px, 100% 100%;
+  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+}
+
+.diary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.diary-eyebrow {
+  margin-bottom: 7px;
+  color: var(--purple);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.diary-header h1 {
+  color: var(--text);
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 24px;
+}
+
+.diary-heart {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f7e9ef;
+  color: #bd7890;
+  font-size: 19px;
+}
+
+.diary-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.diary-page textarea {
+  display: block;
+  width: 100%;
+  min-height: min(58vh, 520px);
+  resize: vertical;
+  padding: 15px;
+  border: 1px solid #e8e2f0;
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--text);
+  font: 15px/1.85 "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.diary-page textarea:focus {
+  border-color: var(--purple-soft);
+  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.1);
+}
+
+.diary-status {
+  min-height: 18px;
+  margin-top: 9px;
+  color: var(--purple);
+  font-size: 11px;
+  text-align: right;
+}
+
+.diary-status.error {
+  color: #a33b47;
+}
+
+.diary-page textarea:disabled {
+  background: #f5f3f7;
+  cursor: not-allowed;
+}
+
+.me-page {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 16px 110px;
+}
+
+.me-page .back-link {
+  margin-bottom: 22px;
+}
+
+.me-header {
+  margin-bottom: 24px;
+  padding: 4px 2px;
+}
+
+.me-header h1 {
+  margin-bottom: 7px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 30px;
+}
+
+.me-header > p:last-child {
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.report-card {
+  padding: 20px;
+  border: 1px solid #e5dff0;
+  border-radius: 20px;
+  background:
+    radial-gradient(rgba(170, 153, 118, 0.12) 0.65px, transparent 0.8px),
+    #fffefa;
+  background-size: 6px 6px, 100% 100%;
+  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+}
+
+.report-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.report-eyebrow {
+  margin-bottom: 6px;
+  color: var(--purple);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.report-heading h2 {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 20px;
+}
+
+.report-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: #eeeaf7;
+  color: var(--purple);
+  font-size: 24px;
+}
+
+.report-description {
+  margin-bottom: 17px;
+  color: var(--text-sub);
+  font-size: 12px;
+}
+
+.report-generate {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8174b6, #655890);
+  box-shadow: 0 4px 12px rgba(113, 101, 168, 0.2);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.report-generate:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.report-generate:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.report-status {
+  min-height: 18px;
+  margin: 10px 1px 0;
+  color: var(--purple);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-status.error {
+  color: #a33b47;
+}
+
+.report-result {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid #eee9f4;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #484350;
+  font-size: 13px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.report-result[hidden] {
+  display: none;
+}
+
+.report-privacy {
+  margin-top: 14px;
+  color: var(--text-sub);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.report-setup {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eee9f4;
+  color: var(--text-sub);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.report-setup summary {
+  color: var(--purple);
+  cursor: pointer;
+}
+
+.report-setup p {
+  margin-top: 9px;
+}
+
+.report-setup code {
+  display: block;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f4f1f8;
+  color: #53496f;
+  font: 11px/1.8 Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+/* ===== 右键删除菜单 ===== */
+.context-menu {
+  position: fixed;
+  display: none;
+  z-index: 1000;
+  min-width: 88px;
+  padding: 4px;
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid rgba(220, 214, 238, 0.7);
+  box-shadow: 0 6px 20px rgba(113, 101, 168, 0.2);
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 13px;
+  text-align: left;
+  color: #c0586e;
+}
+
+.context-menu-item:hover {
+  background: #f8eef1;
+}
+
+/* ===== 日历页（顶部固定，日历过长时向下延伸） ===== */
+.cal-page {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 24px 16px 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+/* 年月导航固定在标题下方，日历过长时向下延伸（页面滚动） */
+.cal-body {
+  margin: 0;
+}
+
+/* 年月导航（位于屏幕上方约 1/3 处） */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: max(12px, calc(33vh - 150px));
+  margin-bottom: 10px;
+}
+
+.cal-label {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin: 0 8px;
+}
+
+.cal-arrow {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #b3aec6;
+  font-size: 17px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cal-arrow:hover:not(:disabled) {
+  background: #e8e4f4;
+  color: var(--purple);
+}
+
+.cal-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.cal-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  padding: 4px 2px;
+  cursor: pointer;
+}
+
+.cal-y {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+/* 回到今天（日历框外右上方，小文字按钮） */
+.cal-today-btn {
+  margin-left: auto;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--purple);
+  font-size: 12px;
+  transition: background 0.15s;
+}
+
+.cal-today-btn:hover {
+  background: #e8e4f4;
+}
+
+/* 月历卡片（横竖线完整连接） */
+.cal-card {
+  background: var(--card);
+  border-radius: 18px;
+  border: 1px solid #e0dbee;
+  box-shadow: 0 2px 12px rgba(113, 101, 168, 0.08);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 横竖线网格（星期行与日期行同格连接） */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--text-sub);
+  background: #f5f2fa;
+  padding: 8px 0;
+  border-right: 1px solid #e0dbee;
+  border-bottom: 1px solid #e0dbee;
+}
+
+.cal-weekday.weekend {
+  color: var(--purple);
+}
+
+/* 去掉最右列的竖线与卡片描边重叠 */
+.cal-grid > :nth-child(7n) {
+  border-right: none;
+}
+
+/* 去掉最底行的横线与卡片描边重叠 */
+.cal-grid > :nth-last-child(-n + 7) {
+  border-bottom: none;
+}
+
+/* 日期格：横竖线划分，数字在右上角 */
+.cal-day-cell {
+  position: relative;
+  aspect-ratio: 1 / 0.95;
+  border-right: 1px solid #e0dbee;
+  border-bottom: 1px solid #e0dbee;
+  background: var(--card);
+}
+
+.cal-day {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px 7px 20px;
+  font-size: 12px;
+  color: #746f80;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.cal-day:hover {
+  background: #edeaf6;
+}
+
+/* 当日：紫色渐变标注 */
+.cal-day.today {
+  background: linear-gradient(135deg, #8a7cc0, #6c5f9e);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.cal-day.weekend {
+  color: var(--purple);
+}
+
+.anniversary-icon {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  display: grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f8e8ed;
+  color: #bc7189;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.cal-day.today .anniversary-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff1c9;
+}
+
+.cal-day-cell.empty {
+  background: transparent;
+}
+
+.anniversary-name {
+  position: absolute;
+  right: 23px;
+  bottom: 4px;
+  left: 4px;
+  overflow: hidden;
+  color: #a05b72;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diary-icon {
+  position: absolute;
+  right: 7px;
+  bottom: 5px;
+  color: #8f80bd;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.cal-day.today .anniversary-name {
+  color: #fff1c9;
+}
+
+.cal-day.today .diary-icon {
+  color: #e9e1ff;
+}
+
+.anniversary-edit {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  z-index: 2;
+  width: 20px;
+  height: 19px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #b28b98;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.anniversary-edit:hover {
+  background: #f1dce4;
+  opacity: 1;
+}
+
+.cal-day-cell.today .anniversary-edit {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.anniversary-dialog {
+  width: min(360px, calc(100vw - 36px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--purple-soft);
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 18px 55px rgba(42, 34, 62, 0.24);
+}
+
+.anniversary-dialog::backdrop {
+  background: rgba(31, 27, 43, 0.38);
+  backdrop-filter: blur(2px);
+}
+
+.anniversary-dialog form {
+  padding: 22px;
+}
+
+.anniversary-dialog h2 {
+  margin-bottom: 6px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 20px;
+}
+
+.anniversary-date {
+  margin-bottom: 18px;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.anniversary-dialog label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+}
+
+.anniversary-dialog input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--purple-soft);
+  border-radius: 10px;
+  outline: none;
+  background: #fbfaff;
+  color: var(--text);
+  font: inherit;
+}
+
+.anniversary-dialog input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.12);
+}
+
+.anniversary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.anniversary-spacer {
+  flex: 1;
+}
+
+.anniversary-actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--purple-soft);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.anniversary-actions .anniversary-save {
+  border-color: var(--purple);
+  background: var(--purple);
+  color: #fff;
+}
+
+.anniversary-actions .anniversary-delete {
+  border-color: #efd1d8;
+  color: #a0445d;
+}
+
+/* ===== 预览页：打开的书 ===== */
+.pv-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #55496e 0%, #453b5e 55%, #38304e 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pv-back {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+
+.pv-back:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pv-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 16px 40px;
+}
+
+/* 书（不挂 filter，避免破坏子元素的 3D 变换） */
+.book {
+  position: relative;
+  perspective: 2200px;
+}
+
+/* 摊开的两页 */
+.spread {
+  position: relative;
+  display: flex;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 22px 40px rgba(0, 0, 0, 0.28);
+  perspective: 2000px;
+  perspective-origin: center;
+}
+
+.page {
+  position: relative;
+  width: min(300px, 42vw);
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(90deg, #faf9f4, #ffffff 30%, #ffffff 70%, #faf9f4);
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.15s;
+}
+
+/* 页面微微内卷，模拟摊开书的弧度 */
+.page-left {
+  border-radius: 16px 2px 2px 16px;
+  transform-origin: right center;
+  transform: rotateY(3deg);
+  box-shadow:
+    inset -22px 0 30px -20px rgba(60, 50, 90, 0.55),
+    inset 12px 0 20px -14px rgba(60, 50, 90, 0.3);
+}
+
+.page-right {
+  border-radius: 2px 16px 16px 2px;
+  transform-origin: left center;
+  transform: rotateY(-3deg);
+  box-shadow:
+    inset 22px 0 30px -20px rgba(60, 50, 90, 0.55),
+    inset -12px 0 20px -14px rgba(60, 50, 90, 0.3);
+}
+
+.page:hover {
+  filter: brightness(0.97);
+}
+
+/* 中缝分隔线（一条极细的暗线） */
+.spread::after {
+  content: "";
+  position: absolute;
+  top: 6%;
+  bottom: 6%;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-0.5px);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(60, 50, 90, 0.18) 20%,
+    rgba(60, 50, 90, 0.18) 80%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* 页码 */
+.page-no {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #b6b1c4;
+  letter-spacing: 2px;
+}
+
+/* 边界页（不能再翻） */
+.page.edge {
+  cursor: default;
+}
+
+.page.edge:hover {
+  filter: none;
+}
+
+.page.hidden {
+  visibility: hidden;
+}
+
+/* 翻页面板：3D 翻起的那一页（盖住新页面，旋出时逐渐揭示） */
+.flap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #fdfdfb;
+  transform-style: preserve-3d;
+  z-index: 5;
+  pointer-events: none;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.22);
+  will-change: transform;
+}
+
+/* 翻起的页面上的书脊与阴影渐变 */
+.flap::before,
+.flap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+}
+
+.flap::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(60, 50, 90, 0.32), rgba(60, 50, 90, 0.04));
+}
+
+.flap::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(60, 50, 90, 0.16), rgba(60, 50, 90, 0));
+}
+
+/* 往后翻：右页从中间向左旋出，下方露出新右页 */
+.flap-next {
+  left: 50%;
+  width: 50%;
+  transform-origin: left center;
+  border-radius: 2px 16px 16px 2px;
+}
+
+/* 往前翻：左页从中间向右旋出，下方露出新左页 */
+.flap-prev {
+  right: 50%;
+  width: 50%;
+  transform-origin: right center;
+  border-radius: 16px 2px 2px 16px;
+}
+
+/* 放大查看 */
+.pv-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 25, 45, 0.82);
+  cursor: zoom-out;
+}
+
+.pv-zoom.show {
+  display: flex;
+}
+
+.zoom-page {
+  width: min(70vmin, 520px);
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  background: #fdfdfb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #b6b1c4;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.preview-content {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  pointer-events: none;
+}
+
+.preview-element {
+  position: absolute;
+  z-index: 1;
+  user-select: none;
+  line-height: 1.15;
+}
+
+.preview-photo {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5cqw 1.5cqw 5cqw;
+  border: 1px solid #e8e2d6;
+  background: #fff;
+  box-shadow: 0 1cqw 2.2cqw rgba(57, 46, 33, 0.2);
+}
+
+.preview-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  background: #e9e4d9;
+  object-fit: cover;
+}
+
+.preview-video {
+  overflow: hidden;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  background: #282532;
+  box-shadow: 0 1cqw 2.2cqw rgba(57, 46, 33, 0.24);
+  pointer-events: auto;
+}
+
+.preview-video video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #282532;
+  object-fit: cover;
+}
+
+.preview-sticker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0.7cqw 1cqw rgba(69, 56, 41, 0.2));
+}
+
+.preview-washi {
+  border-radius: 1cqw;
+  opacity: 0.82;
+  box-shadow: 0 0.6cqw 1cqw rgba(74, 63, 46, 0.12);
+}
+
+.preview-text {
+  overflow-wrap: anywhere;
+  color: #665746;
+  font: italic 4.3cqw/1.2 Georgia, "Songti SC", serif;
+}
+
+.preview-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.7cqw solid #fff9dd;
+  border-radius: 999px;
+  background: #f6dc75;
+  box-shadow: 0 0.8cqw 1.8cqw rgba(95, 76, 36, 0.23);
+  color: #765a35;
+  font-size: 4.4cqw;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.preview-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.6cqw;
+  background: #fbf3cf;
+  box-shadow: 0 0.8cqw 1.8cqw rgba(75, 60, 35, 0.16);
+  color: #66553d;
+  font: italic 3.6cqw/1.25 Georgia, "Songti SC", serif;
+}
+
+.pv-chapter-title {
+  position: absolute;
+  top: 3%;
+  left: 8%;
+  z-index: 2;
+  max-width: 84%;
+  overflow: hidden;
+  color: #9b927f;
+  font: 10px Georgia, "Songti SC", serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pv-data-status {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  z-index: 15;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.page-no {
+  z-index: 4;
+}
