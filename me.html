@@ -30,8 +30,9 @@
         <article class="report-result" id="reportResult" aria-live="polite" hidden></article>
         <p class="report-privacy">生成时，本月日记内容会发送至 OpenAI API。API 密钥仅保存在后端环境变量中。</p>
         <details class="report-setup">
-          <summary>首次使用：启用本地 AI 服务</summary>
-          <p>在项目目录打开 PowerShell，设置你自己的 API 密钥并启动后端；不要把密钥写进网页或发送到聊天中。</p>
+          <summary>首次使用：启用 AI 服务</summary>
+          <p><strong>线上版（Netlify）</strong>：在站点后台 Site configuration → Environment variables 添加 <code>OPENAI_API_KEY</code>，保存并重新部署即可，无需本地运行任何程序。</p>
+          <p><strong>本地版</strong>：在项目目录打开 PowerShell，设置你自己的 API 密钥并启动后端；不要把密钥写进网页或发送到聊天中。</p>
           <code>$env:OPENAI_API_KEY="你的 API 密钥"<br />python local_server.py</code>
           <p>启动后请通过 <code>http://127.0.0.1:8765/me.html</code> 打开此页面。</p>
         </details>
