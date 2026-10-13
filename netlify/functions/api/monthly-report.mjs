@@ -1,4 +1,4 @@
-const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_MODEL = "gpt-4o-mini";
 const MAX_REQUEST_BYTES = 256 * 1024;
 const MAX_ENTRY_LENGTH = 12000;
@@ -132,9 +132,10 @@ export default async function handler(request) {
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+  const baseUrl = (process.env.OPENAI_BASE_URL || DEFAULT_BASE_URL).replace(/\/+$/, "");
   let response;
   try {
-    response = await fetch(OPENAI_URL, {
+    response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
