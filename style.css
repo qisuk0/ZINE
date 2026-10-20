@@ -623,6 +623,343 @@ button {
   font-size: 13px;
 }
 
+.account-card {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid #ddd7ec;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(250, 248, 255, 0.96), rgba(244, 240, 251, 0.92)),
+    var(--card);
+  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+}
+
+.account-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.account-card-heading h2 {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 20px;
+}
+
+.account-card-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8e2f3;
+  color: var(--purple);
+  font-size: 22px;
+}
+
+.account-card-mark.signed-in {
+  background: #dfeee5;
+  color: #4e7d63;
+}
+
+.account-card-title {
+  margin-bottom: 5px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-card-description {
+  color: var(--text-sub);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.account-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 15px;
+  color: var(--purple);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.account-card-link span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.account-page {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.account-header {
+  margin-bottom: 22px;
+  padding: 4px 2px;
+}
+
+.account-header h1 {
+  margin-bottom: 7px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 30px;
+}
+
+.account-header > p:last-child {
+  color: var(--text-sub);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.account-panel {
+  min-height: 286px;
+  padding: 22px;
+  border: 1px solid #e5dff0;
+  border-radius: 20px;
+  background:
+    radial-gradient(rgba(170, 153, 118, 0.1) 0.65px, transparent 0.8px),
+    #fffefa;
+  background-size: 6px 6px, 100% 100%;
+  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+}
+
+.account-loading {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  color: var(--text-sub);
+  font-size: 12px;
+}
+
+.account-loading[hidden],
+.auth-link[hidden] {
+  display: none;
+}
+
+.account-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--purple-soft);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: account-spin 0.8s linear infinite;
+}
+
+@keyframes account-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 22px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f1eef7;
+}
+
+.auth-switch button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.auth-switch button.active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(84, 70, 110, 0.1);
+  font-weight: 650;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form label {
+  margin: 13px 0 7px;
+  color: #615c6a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-form label:first-child {
+  margin-top: 0;
+}
+
+.auth-form input {
+  width: 100%;
+  height: 45px;
+  padding: 0 13px;
+  border: 1px solid #ded8eb;
+  border-radius: 11px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font: inherit;
+}
+
+.auth-form input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.11);
+}
+
+.auth-submit,
+.secondary-button {
+  min-height: 44px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.auth-submit {
+  margin-top: 20px;
+  border: 0;
+  background: linear-gradient(135deg, #8174b6, #655890);
+  box-shadow: 0 4px 12px rgba(113, 101, 168, 0.2);
+  color: #fff;
+}
+
+.auth-submit:disabled,
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.secondary-button {
+  border: 1px solid var(--purple-soft);
+  background: var(--card);
+  color: #5f5872;
+}
+
+.auth-link {
+  align-self: center;
+  margin-top: 13px;
+  border: 0;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 11px;
+}
+
+.auth-link:hover {
+  color: var(--purple);
+}
+
+.account-status {
+  min-height: 18px;
+  margin-top: 12px;
+  color: var(--purple);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.account-status.error {
+  color: #a33b47;
+}
+
+.signed-in-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee9f4;
+}
+
+.account-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e5efe8;
+  color: #4e7d63;
+  font-size: 24px;
+}
+
+.account-kicker {
+  margin-bottom: 4px;
+  color: var(--text-sub);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.signed-in-heading h2,
+#recoveryView h2 {
+  overflow-wrap: anywhere;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 19px;
+}
+
+.account-meta {
+  margin: 5px 0 20px;
+}
+
+.account-meta > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 1px;
+  border-bottom: 1px solid #f0ecf5;
+}
+
+.account-meta dt {
+  color: var(--text-sub);
+  font-size: 11px;
+}
+
+.account-meta dd {
+  color: #544e5d;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.account-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.account-actions .auth-submit {
+  margin-top: 0;
+}
+
+#recoveryView {
+  padding-top: 4px;
+}
+
+#recoveryView h2 {
+  margin-top: 4px;
+}
+
+.account-footnote {
+  margin-top: 16px;
+  padding: 0 8px;
+  color: var(--text-sub);
+  font-size: 10px;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .report-card {
   padding: 20px;
   border: 1px solid #e5dff0;

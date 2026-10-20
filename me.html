@@ -16,6 +16,19 @@
     </header>
 
     <main>
+      <section class="account-card" id="accountCard" aria-labelledby="accountCardTitle">
+        <div class="account-card-heading">
+          <div>
+            <p class="report-eyebrow">YOUR ACCOUNT</p>
+            <h2 id="accountCardTitle">账号与同步</h2>
+          </div>
+          <span class="account-card-mark" id="accountCardMark" aria-hidden="true">✦</span>
+        </div>
+        <p class="account-card-title" id="accountCardEmail">登录后，记录会跟着账号走</p>
+        <p class="account-card-description" id="accountCardStatus">当前记录仅保存在这台设备。</p>
+        <a class="account-card-link" id="accountCardLink" href="account.html">登录或创建账号 <span aria-hidden="true">›</span></a>
+      </section>
+
       <section class="report-card" aria-labelledby="reportTitle">
         <div class="report-heading">
           <div>
@@ -54,6 +67,9 @@
       </a>
     </nav>
   </div>
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-store.js"></script>
   <script src="me.js"></script>
 </body>
 </html>

@@ -36,8 +36,9 @@ function loadBooks() {
 
 function saveBooks() {
   try {
-    localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(books));
-    return true;
+    return window.ZineCloud
+      ? window.ZineCloud.setRecord(BOOKS_STORAGE_KEY, books)
+      : (localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(books)), true);
   } catch (error) {
     console.error("Unable to save books and chapters.", error);
     window.alert("书籍或章节保存失败，请检查浏览器存储空间和权限。");
@@ -45,20 +46,11 @@ function saveBooks() {
   }
 }
 
-const books = loadBooks();
+let books = [];
 const sortSelect = document.getElementById("sortSelect");
 const coverInput = document.getElementById("coverInput");
 let sortMode = "edited";
 let pendingCoverBookId = null;
-
-try {
-  const savedSortMode = localStorage.getItem(SORT_STORAGE_KEY);
-  if (savedSortMode === "edited" || savedSortMode === "name") sortMode = savedSortMode;
-} catch (error) {
-  console.error("Unable to load the book sorting preference.", error);
-  window.alert("读取排列顺序失败，将使用默认编辑顺序。");
-}
-sortSelect.value = sortMode;
 
 function markBookEdited(book) {
   book.lastEditedAt = Date.now();
@@ -344,7 +336,8 @@ searchInput.addEventListener("keydown", (event) => {
 sortSelect.addEventListener("change", () => {
   sortMode = sortSelect.value;
   try {
-    localStorage.setItem(SORT_STORAGE_KEY, sortMode);
+    if (window.ZineCloud) window.ZineCloud.setRecord(SORT_STORAGE_KEY, { mode: sortMode });
+    else localStorage.setItem(SORT_STORAGE_KEY, sortMode);
   } catch (error) {
     console.error("Unable to save the book sorting preference.", error);
     window.alert("排列顺序保存失败，请检查浏览器存储权限。");
@@ -431,4 +424,30 @@ document.addEventListener("contextmenu", (e) => {
   if (!e.target.closest(".book-card")) hideMenu();
 });
 
-render();
+async function startBookPage() {
+  try {
+    if (window.ZineCloud) await window.ZineCloud.ready;
+  } catch (error) {
+    console.error("Unable to finish account sync before opening books.", error);
+  }
+
+  books = loadBooks();
+  try {
+    const savedSortMode = localStorage.getItem(SORT_STORAGE_KEY);
+    let storedMode = savedSortMode;
+    try {
+      const parsedMode = JSON.parse(savedSortMode);
+      storedMode = typeof parsedMode === "string" ? parsedMode : parsedMode && parsedMode.mode;
+    } catch (error) {
+      // Older local versions stored the sort mode as a plain string.
+    }
+    if (storedMode === "edited" || storedMode === "name") sortMode = storedMode;
+  } catch (error) {
+    console.error("Unable to load the book sorting preference.", error);
+    window.alert("读取排列顺序失败，将使用默认编辑顺序。");
+  }
+  sortSelect.value = sortMode;
+  render();
+}
+
+startBookPage();

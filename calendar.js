@@ -42,8 +42,9 @@ function loadAnniversaries() {
 
 function saveAnniversaries() {
   try {
-    localStorage.setItem(ANNIVERSARIES_STORAGE_KEY, JSON.stringify(anniversaries));
-    return true;
+    return window.ZineCloud
+      ? window.ZineCloud.setRecord(ANNIVERSARIES_STORAGE_KEY, anniversaries)
+      : (localStorage.setItem(ANNIVERSARIES_STORAGE_KEY, JSON.stringify(anniversaries)), true);
   } catch (error) {
     console.error("Unable to save anniversaries.", error);
     window.alert("纪念日保存失败，请检查浏览器存储空间和权限。");
@@ -78,9 +79,6 @@ function escapeHtml(value) {
     "'": "&#39;",
   })[character]);
 }
-
-anniversaries = loadAnniversaries();
-diaries = loadDiaries();
 
 // ===== 填充年/月下拉框 =====
 for (let y = MIN_YEAR; y <= MAX_YEAR; y++) {
@@ -241,4 +239,15 @@ document.getElementById("todayBtn").addEventListener("click", () => {
   render();
 });
 
-render();
+async function startCalendarPage() {
+  try {
+    if (window.ZineCloud) await window.ZineCloud.ready;
+  } catch (error) {
+    console.error("Unable to finish account sync before opening the calendar.", error);
+  }
+  anniversaries = loadAnniversaries();
+  diaries = loadDiaries();
+  render();
+}
+
+startCalendarPage();

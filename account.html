@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>账号 - ZINE集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="account-page">
+    <a class="back-link" href="me.html">‹ 返回我的</a>
+    <header class="account-header">
+      <p class="diary-eyebrow">YOUR PRIVATE SPACE</p>
+      <h1>账号与同步</h1>
+      <p>登录后，日记、书籍和纪念日会保存到你的账号。</p>
+    </header>
+
+    <main class="account-panel" id="accountPanel" aria-live="polite">
+      <div class="account-loading" id="accountLoading">
+        <span class="account-spinner" aria-hidden="true"></span>
+        <p>正在检查账号状态…</p>
+      </div>
+
+      <section id="signedOutView" hidden>
+        <div class="auth-switch" role="tablist" aria-label="登录或创建账号">
+          <button class="active" id="loginModeBtn" type="button" role="tab" aria-selected="true">登录</button>
+          <button id="signupModeBtn" type="button" role="tab" aria-selected="false">创建账号</button>
+        </div>
+        <form class="auth-form" id="authForm">
+          <label for="authEmail">邮箱</label>
+          <input id="authEmail" type="email" autocomplete="email" maxlength="254" required />
+          <label for="authPassword">密码</label>
+          <input id="authPassword" type="password" autocomplete="current-password" minlength="6" maxlength="72" required />
+          <button class="auth-submit" id="authSubmitBtn" type="submit">登录</button>
+          <button class="auth-link" id="forgotPasswordBtn" type="button">忘记密码</button>
+        </form>
+        <p class="account-status" id="authStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="signedInView" hidden>
+        <div class="signed-in-heading">
+          <span class="account-avatar" aria-hidden="true">✦</span>
+          <div>
+            <p class="account-kicker">已登录</p>
+            <h2 id="accountEmail"></h2>
+          </div>
+        </div>
+        <dl class="account-meta">
+          <div>
+            <dt>云端状态</dt>
+            <dd id="cloudState">正在检查…</dd>
+          </div>
+          <div>
+            <dt>最近同步</dt>
+            <dd id="lastSyncTime">尚未同步</dd>
+          </div>
+        </dl>
+        <div class="account-actions">
+          <button class="auth-submit" id="syncNowBtn" type="button">立即同步</button>
+          <button class="secondary-button" id="logoutBtn" type="button">退出登录</button>
+        </div>
+        <p class="account-status" id="accountStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="recoveryView" hidden>
+        <p class="account-kicker">重设密码</p>
+        <h2>为账号设置新密码</h2>
+        <form class="auth-form" id="passwordForm">
+          <label for="newPassword">新密码</label>
+          <input id="newPassword" type="password" autocomplete="new-password" minlength="6" maxlength="72" required />
+          <button class="auth-submit" type="submit">保存新密码</button>
+        </form>
+        <p class="account-status" id="passwordStatus" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <p class="account-footnote">账号仅用于保存你自己的记录。其他用户无法读取你的内容。</p>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-store.js"></script>
+  <script src="account.js"></script>
+</body>
+</html>

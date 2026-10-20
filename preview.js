@@ -39,7 +39,23 @@ function openMediaDb() {
   return mediaDbPromise;
 }
 
-async function getVideoUrl(id) {
+async function cacheVideoBlob(id, blob) {
+  const db = await openMediaDb();
+  await new Promise((resolve, reject) => {
+    const transaction = db.transaction("media", "readwrite");
+    transaction.objectStore("media").put({
+      id,
+      blob,
+      name: blob.name || `${id}.mp4`,
+      type: blob.type || "video/mp4",
+    });
+    transaction.addEventListener("complete", resolve, { once: true });
+    transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to cache the video.")), { once: true });
+    transaction.addEventListener("abort", () => reject(transaction.error || new Error("Video caching was cancelled.")), { once: true });
+  });
+}
+
+async function getVideoUrl(id, cloudPath) {
   if (videoUrls.has(id)) return videoUrls.get(id);
   const db = await openMediaDb();
   const record = await new Promise((resolve, reject) => {
@@ -47,8 +63,13 @@ async function getVideoUrl(id) {
     request.addEventListener("success", () => resolve(request.result), { once: true });
     request.addEventListener("error", () => reject(request.error || new Error("Unable to read the saved video.")), { once: true });
   });
-  if (!record || !(record.blob instanceof Blob)) throw new Error("The saved video file is missing.");
-  const url = URL.createObjectURL(record.blob);
+  let blob = record && record.blob instanceof Blob ? record.blob : null;
+  if (!blob && cloudPath && window.ZineCloud) {
+    blob = await ZineCloud.downloadMedia(cloudPath);
+    if (blob) await cacheVideoBlob(id, blob);
+  }
+  if (!blob) throw new Error("The saved video file is missing.");
+  const url = URL.createObjectURL(blob);
   videoUrls.set(id, url);
   return url;
 }
@@ -170,7 +191,7 @@ function createPreviewElement(element) {
       console.error("Unable to play the saved video in preview.");
       previewStatus.textContent = "视频无法播放，请检查文件格式";
     }, { once: true });
-    getVideoUrl(element.videoId).then((url) => {
+    getVideoUrl(element.videoId, element.cloudPath).then((url) => {
       if (node.isConnected) player.src = url;
     }).catch((error) => {
       console.error("Unable to load the saved video for preview.", error);
@@ -298,5 +319,14 @@ zoomOverlay.addEventListener("click", () => {
   zoomOverlay.classList.remove("show");
 });
 
-readChapters();
-render();
+async function startPreviewPage() {
+  try {
+    if (window.ZineCloud) await window.ZineCloud.ready;
+  } catch (error) {
+    console.error("Unable to finish account sync before opening the preview.", error);
+  }
+  readChapters();
+  render();
+}
+
+startPreviewPage();

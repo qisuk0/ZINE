@@ -21,19 +21,6 @@ function isValidDiaryDate(match) {
     && day <= new Date(year, month, 0).getDate();
 }
 
-if (!isValidDiaryDate(dateMatch)) {
-  diaryDate.textContent = "无效的日期";
-  diaryText.disabled = true;
-  diaryStatus.textContent = "请从日历选择一个有效日期。";
-  diaryStatus.classList.add("error");
-} else {
-  diaryDate.textContent = `${dateMatch[1]}年${Number(dateMatch[2])}月${Number(dateMatch[3])}日`;
-  document.title = `${diaryDate.textContent} 日记 - ZINE集`;
-  loadDiary();
-  diaryText.addEventListener("input", scheduleSave);
-  window.addEventListener("pagehide", saveDiary);
-}
-
 function loadDiary() {
   try {
     const stored = localStorage.getItem(DIARIES_STORAGE_KEY);
@@ -73,7 +60,10 @@ function saveDiary() {
   else delete diaries[date];
 
   try {
-    localStorage.setItem(DIARIES_STORAGE_KEY, JSON.stringify(diaries));
+    const saved = window.ZineCloud
+      ? window.ZineCloud.setRecord(DIARIES_STORAGE_KEY, diaries)
+      : (localStorage.setItem(DIARIES_STORAGE_KEY, JSON.stringify(diaries)), true);
+    if (!saved) throw new Error("Unable to write the diary to local storage.");
     diaryStatus.textContent = content.trim() ? "已自动保存" : "空白日记已清除";
     diaryStatus.classList.remove("error");
   } catch (error) {
@@ -84,3 +74,27 @@ function saveDiary() {
     diaryStatus.classList.add("error");
   }
 }
+
+async function startDiaryPage() {
+  try {
+    if (window.ZineCloud) await window.ZineCloud.ready;
+  } catch (error) {
+    console.error("Unable to finish account sync before opening the diary.", error);
+  }
+
+  if (!isValidDiaryDate(dateMatch)) {
+    diaryDate.textContent = "无效的日期";
+    diaryText.disabled = true;
+    diaryStatus.textContent = "请从日历选择一个有效日期。";
+    diaryStatus.classList.add("error");
+    return;
+  }
+
+  diaryDate.textContent = `${dateMatch[1]}年${Number(dateMatch[2])}月${Number(dateMatch[3])}日`;
+  document.title = `${diaryDate.textContent} 日记 - ZINE集`;
+  loadDiary();
+  diaryText.addEventListener("input", scheduleSave);
+  window.addEventListener("pagehide", saveDiary);
+}
+
+startDiaryPage();

@@ -4,13 +4,39 @@ const generateButton = document.getElementById("generateReportBtn");
 const reportDescription = document.getElementById("reportDescription");
 const reportStatus = document.getElementById("reportStatus");
 const reportResult = document.getElementById("reportResult");
+const accountCardEmail = document.getElementById("accountCardEmail");
+const accountCardStatus = document.getElementById("accountCardStatus");
+const accountCardLink = document.getElementById("accountCardLink");
+const accountCardMark = document.getElementById("accountCardMark");
 const now = new Date();
 const reportMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-const diariesByDate = readDiaries();
+let diariesByDate = {};
 
 reportDescription.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月 · 基于本月已保存的日记生成`;
-loadSavedReport();
-generateButton.addEventListener("click", generateReport);
+
+function renderAccountCard(snapshot) {
+  if (snapshot.user) {
+    accountCardEmail.textContent = snapshot.user.email || "已登录账号";
+    accountCardStatus.textContent = snapshot.status === "syncing"
+      ? "正在把记录同步到账号…"
+      : snapshot.status === "error"
+        ? "云端暂时不可用，记录已保存在本机。"
+        : "书籍、日记和纪念日会随账号保存。";
+    accountCardLink.textContent = "管理账号";
+    accountCardLink.href = "account.html";
+    accountCardMark.textContent = "✓";
+    accountCardMark.classList.add("signed-in");
+  } else {
+    accountCardEmail.textContent = "登录后，记录会跟着账号走";
+    accountCardStatus.textContent = snapshot.status === "unconfigured"
+      ? "填写 Supabase 公开密钥后即可开始同步。"
+      : "当前记录仅保存在这台设备。";
+    accountCardLink.textContent = "登录或创建账号";
+    accountCardLink.href = "account.html";
+    accountCardMark.textContent = "✦";
+    accountCardMark.classList.remove("signed-in");
+  }
+}
 
 function readDiaries() {
   try {
@@ -90,10 +116,14 @@ async function generateReport() {
     const generatedAt = new Date().toISOString();
     showReport(result.report.trim(), generatedAt);
     try {
-      localStorage.setItem(REPORT_STORAGE_PREFIX + reportMonth, JSON.stringify({
+      const saved = window.ZineCloud ? window.ZineCloud.setRecord(REPORT_STORAGE_PREFIX + reportMonth, {
         text: result.report.trim(),
         generatedAt,
-      }));
+      }) : (localStorage.setItem(REPORT_STORAGE_PREFIX + reportMonth, JSON.stringify({
+        text: result.report.trim(),
+        generatedAt,
+      })), true);
+      if (!saved) throw new Error("Unable to save the generated report locally.");
     } catch (error) {
       console.error("Unable to save the generated monthly report.", error);
       reportStatus.textContent = "报告已生成，但本地保存失败；请检查浏览器存储空间。";
@@ -111,3 +141,22 @@ async function generateReport() {
     generateButton.disabled = false;
   }
 }
+
+async function startMePage() {
+  if (window.ZineCloud) {
+    ZineCloud.subscribe(renderAccountCard);
+    try {
+      await ZineCloud.ready;
+    } catch (error) {
+      console.error("Unable to finish account sync before opening the profile page.", error);
+    }
+  } else {
+    renderAccountCard({ user: null, status: "offline" });
+  }
+
+  diariesByDate = readDiaries();
+  loadSavedReport();
+  generateButton.addEventListener("click", generateReport);
+}
+
+startMePage();

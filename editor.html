@@ -637,6 +637,9 @@
     </footer>
   </main>
 
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-store.js"></script>
   <script>
     const canvas = document.getElementById("canvas");
     const editor = document.querySelector(".editor");
@@ -675,6 +678,7 @@
     let statusTimer;
     const videoUrls = new Map();
     let mediaDbPromise;
+    let editorReady = false;
 
     function openMediaDb() {
       if (!mediaDbPromise) {
@@ -704,7 +708,23 @@
       });
     }
 
-    async function getVideoUrl(id) {
+    async function cacheVideoBlob(id, blob) {
+      const db = await openMediaDb();
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction("media", "readwrite");
+        transaction.objectStore("media").put({
+          id,
+          blob,
+          name: blob.name || `${id}.mp4`,
+          type: blob.type || "video/mp4",
+        });
+        transaction.addEventListener("complete", resolve, { once: true });
+        transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to cache the video.")), { once: true });
+        transaction.addEventListener("abort", () => reject(transaction.error || new Error("Video caching was cancelled.")), { once: true });
+      });
+    }
+
+    async function getVideoUrl(id, cloudPath) {
       if (videoUrls.has(id)) return videoUrls.get(id);
       const db = await openMediaDb();
       const record = await new Promise((resolve, reject) => {
@@ -712,8 +732,13 @@
         request.addEventListener("success", () => resolve(request.result), { once: true });
         request.addEventListener("error", () => reject(request.error || new Error("Unable to read the saved video.")), { once: true });
       });
-      if (!record || !(record.blob instanceof Blob)) throw new Error("The saved video file is missing.");
-      const url = URL.createObjectURL(record.blob);
+      let blob = record && record.blob instanceof Blob ? record.blob : null;
+      if (!blob && cloudPath && window.ZineCloud) {
+        blob = await ZineCloud.downloadMedia(cloudPath);
+        if (blob) await cacheVideoBlob(id, blob);
+      }
+      if (!blob) throw new Error("The saved video file is missing.");
+      const url = URL.createObjectURL(blob);
       videoUrls.set(id, url);
       return url;
     }
@@ -836,7 +861,7 @@
         player.preload = "metadata";
         player.setAttribute("aria-label", element.name ? `播放视频：${element.name}` : "播放视频");
         player.addEventListener("error", () => showStatus("视频无法播放，请检查文件格式"), { once: true });
-        getVideoUrl(element.videoId).then((url) => {
+        getVideoUrl(element.videoId, element.cloudPath).then((url) => {
           if (node.isConnected) player.src = url;
         }).catch((error) => {
           console.error("Unable to load the saved video.", error);
@@ -914,7 +939,13 @@
         const book = savedBooks.find((item) => item && item.id === Number(bookId));
         if (!book) throw new Error(`Book ${bookId} was not found.`);
         book.lastEditedAt = Date.now();
-        localStorage.setItem("zine_books_v1", JSON.stringify(savedBooks));
+        if (window.ZineCloud) {
+          if (!window.ZineCloud.setRecord("zine_books_v1", savedBooks)) {
+            throw new Error("Unable to save the updated book list.");
+          }
+        } else {
+          localStorage.setItem("zine_books_v1", JSON.stringify(savedBooks));
+        }
         return true;
       } catch (error) {
         console.error("Unable to update the book's edit order.", error);
@@ -923,9 +954,14 @@
     }
 
     function save(markEdited = false) {
+      if (!editorReady) return true;
       try {
         pages[currentPage] = cloneElements();
-        localStorage.setItem(storageKey, JSON.stringify({ version: 2, pages }));
+        const pageData = { version: 2, pages };
+        const saved = window.ZineCloud
+          ? window.ZineCloud.setRecord(storageKey, pageData)
+          : (localStorage.setItem(storageKey, JSON.stringify(pageData)), true);
+        if (!saved) throw new Error("Unable to save the journal page locally.");
         const editOrderSaved = !markEdited || updateBookEditedAt();
         showStatus(editOrderSaved ? "已自动保存" : "页面已保存，但编辑顺序更新失败");
         return true;
@@ -1331,7 +1367,17 @@
       try {
         await storeVideo(file, videoId);
         videoUrls.set(videoId, URL.createObjectURL(file));
-        addElement({ type: "video", videoId, name: file.name, w: 38, h: 27 });
+        let cloudPath = null;
+        if (window.ZineCloud) {
+          showStatus("正在把视频保存到账号…");
+          try {
+            cloudPath = await ZineCloud.uploadMedia(file, videoId);
+          } catch (uploadError) {
+            console.error("Unable to upload the selected video to the account.", uploadError);
+            showStatus("视频已保存在本机，账号上传稍后重试");
+          }
+        }
+        addElement({ type: "video", videoId, cloudPath, name: file.name, w: 38, h: 27 });
       } catch (error) {
         console.error("Unable to save the selected video.", error);
         showStatus("视频保存失败，请检查浏览器存储空间");
@@ -1358,10 +1404,20 @@
       }
     });
 
-    load();
-    render();
-    showPanel("sticker");
-    save();
+    async function startEditorPage() {
+      try {
+        if (window.ZineCloud) await window.ZineCloud.ready;
+      } catch (error) {
+        console.error("Unable to finish account sync before opening the editor.", error);
+      }
+      load();
+      render();
+      showPanel("sticker");
+      editorReady = true;
+      save();
+    }
+
+    startEditorPage();
 
     window.addEventListener("pagehide", save);
     window.addEventListener("pagehide", () => {
