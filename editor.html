@@ -244,13 +244,13 @@
 
     .handle {
       position: absolute;
-      right: -7px;
-      bottom: -7px;
+      right: -10px;
+      bottom: -10px;
       z-index: 6;
       display: none;
-      width: 12px;
-      height: 12px;
-      border: 1.5px solid var(--purple);
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--purple);
       border-radius: 50%;
       background: #fff;
       cursor: nwse-resize;
@@ -263,19 +263,19 @@
 
     .rotate-handle {
       position: absolute;
-      top: -27px;
+      top: -38px;
       left: 50%;
       z-index: 7;
       display: none;
-      width: 19px;
-      height: 19px;
+      width: 28px;
+      height: 28px;
       align-items: center;
       justify-content: center;
-      border: 1.5px solid var(--purple);
+      border: 2px solid var(--purple);
       border-radius: 50%;
       background: #fff;
       color: var(--purple);
-      font-size: 15px;
+      font-size: 18px;
       line-height: 1;
       cursor: grab;
       touch-action: none;
@@ -297,7 +297,50 @@
       display: flex;
     }
 
+    .delete-handle {
+      position: absolute;
+      top: -38px;
+      right: -6px;
+      z-index: 9;
+      display: none;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #d1584f;
+      border-radius: 50%;
+      background: #fff;
+      color: #d1584f;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .el.selected .delete-handle {
+      display: flex;
+    }
+
+    .el.near-top .rotate-handle,
+    .el.near-top .delete-handle {
+      top: 2px;
+    }
+
+    .el.near-top .rotate-handle {
+      left: 2px;
+      transform: none;
+    }
+
+    .el.near-top .rotate-handle::after {
+      display: none;
+    }
+
+    .el.near-top .delete-handle {
+      right: 2px;
+    }
+
     .el.editing .rotate-handle,
+    .el.editing .delete-handle,
     .el.editing .handle {
       display: none;
     }
@@ -324,6 +367,102 @@
 
     .el-photo-large {
       padding-bottom: 5.5cqw;
+    }
+
+    .el-photo.frame-film {
+      padding: 3.2cqw 1.2cqw;
+      border: 0;
+      background-color: #26232a;
+      background-image:
+        repeating-linear-gradient(90deg, #f7f4ef 0 1cqw, transparent 1cqw 2.3cqw),
+        repeating-linear-gradient(90deg, #f7f4ef 0 1cqw, transparent 1cqw 2.3cqw);
+      background-size: 100% 1.3cqw, 100% 1.3cqw;
+      background-position: 0 0.95cqw, 0 calc(100% - 2.25cqw);
+      background-repeat: no-repeat;
+      box-shadow: 0 1cqw 2.4cqw rgba(38, 35, 42, 0.32);
+    }
+
+    .el-photo.frame-stamp {
+      padding: 3.4cqw;
+      border: 0;
+      background-color: #fffdf7;
+      background-image: radial-gradient(circle, transparent 0 0.38cqw, #fffdf7 0.4cqw);
+      background-size: 1.9cqw 1.9cqw;
+      box-shadow: 0 1cqw 2.2cqw rgba(57, 46, 33, 0.18);
+    }
+
+    .el-photo.frame-tape::before,
+    .el-photo.frame-tape::after {
+      position: absolute;
+      z-index: 2;
+      width: 32%;
+      height: 4cqw;
+      content: "";
+      background: rgba(232, 205, 178, 0.8);
+      box-shadow: 0 0.4cqw 0.8cqw rgba(74, 63, 46, 0.14);
+    }
+
+    .el-photo.frame-tape::before {
+      top: -2.4cqw;
+      left: -4cqw;
+      transform: rotate(-32deg);
+    }
+
+    .el-photo.frame-tape::after {
+      right: -4cqw;
+      bottom: -2.4cqw;
+      transform: rotate(-32deg);
+    }
+
+    .el-photo.frame-line {
+      padding: 0;
+      border: 1.1cqw solid #fffdf7;
+      background: transparent;
+      box-shadow: 0 0 0 0.45cqw rgba(102, 87, 70, 0.42), 0 1cqw 2.2cqw rgba(57, 46, 33, 0.18);
+    }
+
+    .el-photo.frame-soft {
+      padding: 0;
+      border: 0;
+      border-radius: 2.4cqw;
+      background: transparent;
+      box-shadow: 0 1.4cqw 3cqw rgba(57, 46, 33, 0.24);
+    }
+
+    .el-photo.frame-soft img {
+      border-radius: 2.4cqw;
+    }
+
+    .el-photo.frame-heart,
+    .el-photo.frame-star,
+    .el-photo.frame-circle,
+    .el-photo.frame-hexagon,
+    .el-photo.frame-arch {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      filter: drop-shadow(0 1cqw 1.8cqw rgba(57, 46, 33, 0.28));
+    }
+
+    .el-photo.frame-heart img {
+      clip-path: url(#zineClipHeart);
+    }
+
+    .el-photo.frame-star img {
+      clip-path: url(#zineClipStar);
+    }
+
+    .el-photo.frame-circle img {
+      clip-path: circle(49.5% at 50% 50%);
+    }
+
+    .el-photo.frame-hexagon img {
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .el-photo.frame-arch img {
+      border-radius: 50% 50% 4% 4% / 32% 32% 4% 4%;
     }
 
     .el-video {
@@ -423,6 +562,10 @@
       text-shadow: 0 0.5cqw #fff;
     }
 
+    .el-sticker.tone-ins {
+      filter: grayscale(0.8) sepia(0.28) brightness(1.03) drop-shadow(0 0.7cqw 1cqw rgba(69, 56, 41, 0.18));
+    }
+
     .status {
       position: absolute;
       right: 12px;
@@ -494,6 +637,158 @@
     .asset:hover {
       transform: translateY(-2px);
       background: #f3f0f9;
+    }
+
+    .asset-divider {
+      flex: 0 0 auto;
+      align-self: center;
+      padding: 0 2px;
+      color: var(--text-sub);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .frame-asset {
+      flex-direction: row;
+      gap: 6px;
+      min-width: 0;
+      padding: 0 9px;
+      font-size: 12px;
+    }
+
+    .frame-caption {
+      color: var(--text-sub);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .frame-swatch {
+      position: relative;
+      display: block;
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      width: 22px;
+      height: 28px;
+      border: 1px solid #e8e2d6;
+      background: #bfb6a4;
+    }
+
+    .frame-swatch-classic {
+      padding: 2px 2px 7px;
+      background: #fff;
+    }
+
+    .frame-swatch-classic::before,
+    .frame-swatch-tape::before {
+      display: block;
+      width: 100%;
+      height: 100%;
+      content: "";
+      background: #bfb6a4;
+    }
+
+    .frame-swatch-tape {
+      padding: 2px 2px 6px;
+      background: #fff;
+    }
+
+    .frame-swatch-tape::after {
+      position: absolute;
+      top: -2px;
+      left: -3px;
+      width: 12px;
+      height: 5px;
+      content: "";
+      background: rgba(232, 205, 178, 0.95);
+      transform: rotate(-32deg);
+    }
+
+    .frame-swatch-film {
+      padding: 4px 2px;
+      border-color: #26232a;
+      background-color: #26232a;
+      background-image:
+        repeating-linear-gradient(90deg, #f7f4ef 0 2px, transparent 2px 4.5px),
+        repeating-linear-gradient(90deg, #f7f4ef 0 2px, transparent 2px 4.5px);
+      background-size: 100% 2.5px, 100% 2.5px;
+      background-position: 0 0.8px, 0 calc(100% - 3.3px);
+      background-repeat: no-repeat;
+    }
+
+    .frame-swatch-film::before {
+      display: block;
+      width: 100%;
+      height: 100%;
+      content: "";
+      background: #6f6558;
+    }
+
+    .frame-swatch-stamp {
+      padding: 3px;
+      border: 1px dashed #d8cfb9;
+      background-color: #fffdf7;
+    }
+
+    .frame-swatch-stamp::before {
+      display: block;
+      width: 100%;
+      height: 100%;
+      content: "";
+      background: #bfb6a4;
+    }
+
+    .frame-swatch-line {
+      border: 2px solid #fffdf7;
+      outline: 1px solid rgba(102, 87, 70, 0.5);
+      background: #bfb6a4;
+    }
+
+    .frame-swatch-soft {
+      border: 0;
+      border-radius: 5px;
+      background: #bfb6a4;
+      box-shadow: 0 2px 5px rgba(57, 46, 33, 0.32);
+    }
+
+    .frame-swatch-heart,
+    .frame-swatch-star,
+    .frame-swatch-circle,
+    .frame-swatch-hexagon,
+    .frame-swatch-arch {
+      border: 0;
+    }
+
+    .frame-swatch-heart {
+      clip-path: url(#zineClipHeart);
+    }
+
+    .frame-swatch-star {
+      clip-path: url(#zineClipStar);
+    }
+
+    .frame-swatch-circle {
+      border-radius: 50%;
+    }
+
+    .frame-swatch-hexagon {
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .frame-swatch-arch {
+      border-radius: 50% 50% 4% 4% / 32% 32% 4% 4%;
+    }
+
+    .ratio-swatch {
+      width: 20px;
+      height: auto;
+      border: 1px solid #b3a78e;
+      background: #cfc5ae;
+      box-shadow: none;
+    }
+
+    .ratio-swatch-full {
+      border-color: #8a7d63;
+      background: #8a7d63;
     }
 
     .asset.washi-asset {
@@ -636,6 +931,17 @@
       <input id="videoInput" type="file" accept="video/*" hidden />
     </footer>
   </main>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <clipPath id="zineClipHeart" clipPathUnits="objectBoundingBox">
+        <path d="M0.5,0.95 C0.22,0.76 0.02,0.56 0.02,0.33 C0.02,0.13 0.16,0.02 0.31,0.02 C0.4,0.02 0.47,0.07 0.5,0.14 C0.53,0.07 0.6,0.02 0.69,0.02 C0.84,0.02 0.98,0.13 0.98,0.33 C0.98,0.56 0.78,0.76 0.5,0.95 Z"/>
+      </clipPath>
+      <clipPath id="zineClipStar" clipPathUnits="objectBoundingBox">
+        <path d="M0.5,0.03 L0.623,0.36 L0.976,0.376 L0.7,0.595 L0.794,0.935 L0.5,0.74 L0.206,0.935 L0.3,0.595 L0.024,0.376 L0.377,0.36 Z"/>
+      </clipPath>
+    </defs>
+  </svg>
 
   <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -927,10 +1233,12 @@
       node.style.top = `${element.y}%`;
       node.style.width = `${element.w}%`;
       node.style.transform = `rotate(${element.rot || 0}deg)`;
+      if (element.y < 14) node.classList.add("near-top");
 
       if (element.type === "photo") {
         node.style.height = `${element.h}%`;
         if (element.large) node.classList.add("el-photo-large");
+        if (element.frame) node.classList.add(`frame-${element.frame}`);
         const image = document.createElement("img");
         image.alt = "拼贴照片";
         if (element.src) {
@@ -975,6 +1283,7 @@
         node.style.fontSize = `${element.w * 0.7}cqw`;
         node.textContent = element.content;
         if (element.content === "⭐") node.classList.add("silver-star");
+        if (element.tone === "ins") node.classList.add("tone-ins");
       } else if (element.type === "washi") {
         node.style.height = `${element.h}%`;
         node.style.backgroundColor = element.color;
@@ -998,6 +1307,12 @@
       rotateHandle.setAttribute("aria-label", "旋转元素");
       rotateHandle.textContent = "↻";
       node.append(rotateHandle);
+      const deleteHandle = document.createElement("span");
+      deleteHandle.className = "delete-handle";
+      deleteHandle.setAttribute("role", "button");
+      deleteHandle.setAttribute("aria-label", "删除元素");
+      deleteHandle.textContent = "✕";
+      node.append(deleteHandle);
       return node;
     }
 
@@ -1074,8 +1389,6 @@
       try {
         const saved = localStorage.getItem(storageKey);
         if (saved === null) {
-          seedElements();
-          pages[0] = cloneElements();
           return;
         }
         const parsed = JSON.parse(saved);
@@ -1111,9 +1424,7 @@
         console.error("Unable to load the saved journal page.", error);
         pages.forEach((page) => page.splice(0, page.length));
         elements = pages[0];
-        seedElements();
-        pages[0] = cloneElements();
-        showStatus("读取存档失败，已载入示例页面");
+        showStatus("读取存档失败，已新建空白页");
       }
     }
 
@@ -1203,6 +1514,77 @@
       beginTextEdit(content, element);
     });
 
+    const INS_STICKERS = ["🤍", "🕊️", "🌿", "🌾", "🍋", "🥐", "🦋", "📷", "🎞️", "🌙", "🕯️", "✦", "☾", "✎", "❀", "♪"];
+    const PHOTO_FRAMES = [
+      { value: "classic", label: "拍立得" },
+      { value: "film", label: "胶片" },
+      { value: "stamp", label: "邮票" },
+      { value: "tape", label: "胶带" },
+      { value: "line", label: "细边" },
+      { value: "soft", label: "圆角" },
+      { value: "heart", label: "心形" },
+      { value: "star", label: "星形" },
+      { value: "circle", label: "圆形" },
+      { value: "hexagon", label: "六边" },
+      { value: "arch", label: "拱形" },
+    ];
+    const PHOTO_RATIOS = [
+      { value: "square", label: "方形", rw: 1, rh: 1 },
+      { value: "portrait", label: "竖版", rw: 3, rh: 4 },
+      { value: "landscape", label: "横版", rw: 4, rh: 3 },
+      { value: "wide", label: "宽幅", rw: 16, rh: 9 },
+      { value: "full", label: "整页", rw: 3, rh: 4 },
+    ];
+    let pendingRatio = null;
+
+    function makeAssetDivider(text) {
+      const divider = document.createElement("span");
+      divider.className = "asset-divider";
+      divider.textContent = text;
+      return divider;
+    }
+
+    function addFrameButton(frame) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "asset frame-asset";
+      button.setAttribute("aria-label", `照片边框：${frame.label}`);
+      button.dataset.assetType = "photo-frame";
+      button.dataset.assetValue = frame.value;
+      const swatch = document.createElement("span");
+      swatch.className = `frame-swatch frame-swatch-${frame.value}`;
+      const caption = document.createElement("span");
+      caption.className = "frame-caption";
+      caption.textContent = frame.label;
+      button.append(swatch, caption);
+      assetList.append(button);
+    }
+
+    function heightForRatio(w, ratio, fallback) {
+      if (!ratio) return fallback;
+      const bounds = canvas.getBoundingClientRect();
+      if (!bounds.height) return fallback;
+      return Math.max(10, Math.min(80, w * (ratio.rh / ratio.rw) * (bounds.width / bounds.height)));
+    }
+
+    function addRatioButton(ratio) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "asset frame-asset";
+      button.setAttribute("aria-label", `照片比例：${ratio.label}`);
+      button.dataset.assetType = "photo-ratio";
+      button.dataset.assetValue = ratio.value;
+      const swatch = document.createElement("span");
+      swatch.className = "frame-swatch ratio-swatch";
+      swatch.style.aspectRatio = `${ratio.rw} / ${ratio.rh}`;
+      if (ratio.value === "full") swatch.classList.add("ratio-swatch-full");
+      const caption = document.createElement("span");
+      caption.className = "frame-caption";
+      caption.textContent = ratio.label;
+      button.append(swatch, caption);
+      assetList.append(button);
+    }
+
     function addAssetButton(label, type, value, className = "") {
       const button = document.createElement("button");
       button.type = "button";
@@ -1211,6 +1593,7 @@
       button.dataset.assetType = type;
       if (value) button.dataset.assetValue = value;
       assetList.append(button);
+      return button;
     }
 
     function showPanel(name) {
@@ -1232,6 +1615,10 @@
       if (name === "photo") {
         addAssetButton("＋", "upload", "", "upload-asset");
         addAssetButton("🏞️", "photo", "sample");
+        assetList.append(makeAssetDivider("边框"));
+        PHOTO_FRAMES.forEach(addFrameButton);
+        assetList.append(makeAssetDivider("比例"));
+        PHOTO_RATIOS.forEach(addRatioButton);
       } else if (name === "video") {
         addAssetButton("＋ 选择视频", "video-upload", "", "text-asset");
         const hint = document.createElement("span");
@@ -1241,6 +1628,10 @@
       } else if (name === "sticker") {
         ["⭐", "❤️", "☁️", "🐾", "🌈", "🎀", "🎧", "☕"].forEach((content) => {
           addAssetButton(content, "sticker", content);
+        });
+        assetList.append(makeAssetDivider("INS 风"));
+        INS_STICKERS.forEach((content) => {
+          addAssetButton(content, "sticker", content).dataset.assetTone = "ins";
         });
       } else if (name === "washi") {
         ["#edc3c8", "#abc8e2", "#c8d8bb", "#f0d37d"].forEach((color) => {
@@ -1281,14 +1672,63 @@
       } else if (assetType === "video-upload") {
         videoInput.click();
       } else if (assetType === "photo" && assetValue === "sample") {
+        const full = pendingRatio && pendingRatio.value === "full";
         addElement({
           type: "photo",
           src: samplePhoto("#c8d3c3", "#a8ba9e", "a lovely day"),
-          w: 28,
-          h: 23,
+          ...(full
+            ? { x: 0, y: 0, w: 100, h: 100, rot: 0 }
+            : { w: 28, h: heightForRatio(28, pendingRatio, 23) }),
         });
       } else if (assetType === "sticker") {
-        addElement({ type: "sticker", content: assetValue, w: 11, h: 11 });
+        const sticker = { type: "sticker", content: assetValue, w: 11, h: 11 };
+        if (asset.dataset.assetTone) sticker.tone = asset.dataset.assetTone;
+        addElement(sticker);
+      } else if (assetType === "photo-frame") {
+        const photo = elements.find((item) => item.id === selectedId && item.type === "photo");
+        if (!photo) {
+          showStatus("先在画布上选中一张照片，再选边框款式");
+          return;
+        }
+        remember();
+        if (assetValue === "classic") delete photo.frame;
+        else photo.frame = assetValue;
+        render();
+        save(true);
+      } else if (assetType === "photo-ratio") {
+        const ratio = PHOTO_RATIOS.find((item) => item.value === assetValue);
+        if (!ratio) return;
+        pendingRatio = ratio;
+        const photo = elements.find((item) => item.id === selectedId && item.type === "photo");
+        if (!photo) {
+          showStatus(ratio.value === "full" ? "新照片将铺满整页" : `新照片将使用${ratio.label}比例`);
+          return;
+        }
+        remember();
+        if (ratio.value === "full") {
+          photo.x = 0;
+          photo.y = 0;
+          photo.w = 100;
+          photo.h = 100;
+          photo.rot = 0;
+          render();
+          save(true);
+          showStatus("照片已铺满整页");
+          return;
+        }
+        const bounds = canvas.getBoundingClientRect();
+        let height = photo.w * (ratio.rh / ratio.rw) * (bounds.width / bounds.height);
+        if (height > 80) {
+          height = 80;
+          photo.w = Math.max(6, 80 / ((ratio.rh / ratio.rw) * (bounds.width / bounds.height)));
+        } else if (height < 10) {
+          height = 10;
+          photo.w = Math.max(6, 10 / ((ratio.rh / ratio.rw) * (bounds.width / bounds.height)));
+        }
+        photo.h = height;
+        render();
+        save(true);
+        showStatus(`已应用${ratio.label}比例`);
       } else if (assetType === "washi") {
         addElement({ type: "washi", color: assetValue, w: 32, h: 6 });
       } else if (assetType === "text") {
@@ -1315,6 +1755,16 @@
       const element = elements.find((item) => item.id === Number(node.dataset.id));
       if (!element) return;
 
+      if (event.target.classList.contains("delete-handle")) {
+        remember();
+        elements.splice(elements.indexOf(element), 1);
+        selectedId = null;
+        render();
+        save(true);
+        return;
+      }
+
+      const wasSelected = element.id === selectedId;
       canvas.querySelectorAll(".el.selected").forEach((selected) => {
         selected.classList.remove("selected");
       });
@@ -1360,16 +1810,30 @@
           element.y = Math.max(0, Math.min(100 - element.h, original.y + dy));
           node.style.left = `${element.x}%`;
           node.style.top = `${element.y}%`;
+          node.classList.toggle("near-top", element.y < 14);
         }
 
         moved = moved || dx !== 0 || dy !== 0;
       }
 
-      function finish() {
+      function finish(finishEvent) {
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", finish);
         window.removeEventListener("pointercancel", finish);
-        if (!moved) return;
+        if (!moved) {
+          if (
+            finishEvent
+            && finishEvent.type === "pointerup"
+            && finishEvent.pointerType !== "mouse"
+            && wasSelected
+            && ["text", "note", "label"].includes(element.type)
+            && node.isConnected
+          ) {
+            const content = node.querySelector(".el-content");
+            if (content) beginTextEdit(content, element);
+          }
+          return;
+        }
         history.push(cloneElements().map((item) => item.id === element.id ? original : item));
         if (history.length > 50) history.shift();
         future.length = 0;
@@ -1451,7 +1915,15 @@
             showStatus("照片已保存在本机，账号上传稍后重试");
           }
         }
-        addElement({ type: "photo", mediaId: photoId, cloudPath, w: 29, h: 24 });
+        const full = pendingRatio && pendingRatio.value === "full";
+        addElement({
+          type: "photo",
+          mediaId: photoId,
+          cloudPath,
+          ...(full
+            ? { x: 0, y: 0, w: 100, h: 100, rot: 0 }
+            : { w: 29, h: heightForRatio(29, pendingRatio, 24) }),
+        });
       } catch (error) {
         console.error("Unable to save the selected photo.", error);
         showStatus("照片处理失败，请换一张图片重试");

@@ -174,6 +174,7 @@ function createPreviewElement(element) {
 
   if (element.type === "photo") {
     node.style.height = `${element.h}%`;
+    if (element.frame) node.classList.add(`frame-${element.frame}`);
     const image = document.createElement("img");
     image.alt = "章节照片";
     if (element.src) {
@@ -211,6 +212,7 @@ function createPreviewElement(element) {
     node.style.height = `${element.h}%`;
     node.style.fontSize = `${element.w * 0.7}cqw`;
     node.textContent = element.content || "";
+    if (element.tone === "ins") node.classList.add("tone-ins");
   } else if (element.type === "washi") {
     node.style.height = `${element.h}%`;
     node.style.backgroundColor = element.color || "#dcd6ee";

@@ -1723,6 +1723,102 @@ button {
   object-fit: cover;
 }
 
+.preview-photo.frame-film {
+  padding: 3.2cqw 1.2cqw;
+  border: 0;
+  background-color: #26232a;
+  background-image:
+    repeating-linear-gradient(90deg, #f7f4ef 0 1cqw, transparent 1cqw 2.3cqw),
+    repeating-linear-gradient(90deg, #f7f4ef 0 1cqw, transparent 1cqw 2.3cqw);
+  background-size: 100% 1.3cqw, 100% 1.3cqw;
+  background-position: 0 0.95cqw, 0 calc(100% - 2.25cqw);
+  background-repeat: no-repeat;
+  box-shadow: 0 1cqw 2.4cqw rgba(38, 35, 42, 0.32);
+}
+
+.preview-photo.frame-stamp {
+  padding: 3.4cqw;
+  border: 0;
+  background-color: #fffdf7;
+  background-image: radial-gradient(circle, transparent 0 0.38cqw, #fffdf7 0.4cqw);
+  background-size: 1.9cqw 1.9cqw;
+  box-shadow: 0 1cqw 2.2cqw rgba(57, 46, 33, 0.18);
+}
+
+.preview-photo.frame-tape::before,
+.preview-photo.frame-tape::after {
+  position: absolute;
+  z-index: 2;
+  width: 32%;
+  height: 4cqw;
+  content: "";
+  background: rgba(232, 205, 178, 0.8);
+  box-shadow: 0 0.4cqw 0.8cqw rgba(74, 63, 46, 0.14);
+}
+
+.preview-photo.frame-tape::before {
+  top: -2.4cqw;
+  left: -4cqw;
+  transform: rotate(-32deg);
+}
+
+.preview-photo.frame-tape::after {
+  right: -4cqw;
+  bottom: -2.4cqw;
+  transform: rotate(-32deg);
+}
+
+.preview-photo.frame-line {
+  padding: 0;
+  border: 1.1cqw solid #fffdf7;
+  background: transparent;
+  box-shadow: 0 0 0 0.45cqw rgba(102, 87, 70, 0.42), 0 1cqw 2.2cqw rgba(57, 46, 33, 0.18);
+}
+
+.preview-photo.frame-soft {
+  padding: 0;
+  border: 0;
+  border-radius: 2.4cqw;
+  background: transparent;
+  box-shadow: 0 1.4cqw 3cqw rgba(57, 46, 33, 0.24);
+}
+
+.preview-photo.frame-soft img {
+  border-radius: 2.4cqw;
+}
+
+.preview-photo.frame-heart,
+.preview-photo.frame-star,
+.preview-photo.frame-circle,
+.preview-photo.frame-hexagon,
+.preview-photo.frame-arch {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 1cqw 1.8cqw rgba(57, 46, 33, 0.28));
+}
+
+.preview-photo.frame-heart img {
+  clip-path: url(#zineClipHeart);
+}
+
+.preview-photo.frame-star img {
+  clip-path: url(#zineClipStar);
+}
+
+.preview-photo.frame-circle img {
+  clip-path: circle(49.5% at 50% 50%);
+}
+
+.preview-photo.frame-hexagon img {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.preview-photo.frame-arch img {
+  border-radius: 50% 50% 4% 4% / 32% 32% 4% 4%;
+}
+
 .preview-video {
   overflow: hidden;
   border: 2px solid #fff;
@@ -1745,6 +1841,10 @@ button {
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 0.7cqw 1cqw rgba(69, 56, 41, 0.2));
+}
+
+.preview-sticker.tone-ins {
+  filter: grayscale(0.8) sepia(0.28) brightness(1.03) drop-shadow(0 0.7cqw 1cqw rgba(69, 56, 41, 0.18));
 }
 
 .preview-washi {

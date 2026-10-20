@@ -29,6 +29,21 @@
         <a class="account-card-link" id="accountCardLink" href="account.html">登录或创建账号 <span aria-hidden="true">›</span></a>
       </section>
 
+      <section class="report-card" aria-labelledby="bookSummaryTitle">
+        <div class="report-heading">
+          <div>
+            <p class="report-eyebrow">MY ZINE COLLECTION</p>
+            <h2 id="bookSummaryTitle">我的集总结</h2>
+          </div>
+          <span class="report-icon" aria-hidden="true">✦</span>
+        </div>
+        <p class="report-description">让 AI 翻阅你的每一本集：章节里的文字，以及照片、贴纸的分布，都会被温柔地整理成一篇回顾。</p>
+        <button class="report-generate" id="bookSummaryBtn" type="button">✦ 生成我的集总结</button>
+        <p class="report-status" id="bookSummaryStatus" role="status" aria-live="polite"></p>
+        <article class="report-result" id="bookSummaryResult" aria-live="polite" hidden></article>
+        <p class="report-privacy">生成时，集内文字与元素统计会发送至 AI 服务。API 密钥仅保存在后端环境变量中，照片本身不会上传用于总结。</p>
+      </section>
+
       <section class="report-card" aria-labelledby="reportTitle">
         <div class="report-heading">
           <div>

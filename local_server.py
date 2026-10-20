@@ -32,6 +32,9 @@ class ZineHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path == "/api/book-summary":
+            self.handle_book_summary()
+            return
         if self.path != "/api/monthly-report":
             self.send_json(404, {"error": "接口不存在。"})
             return
@@ -149,6 +152,145 @@ class ZineHandler(SimpleHTTPRequestHandler):
         except (KeyError, IndexError, TypeError, json.JSONDecodeError, ValueError) as error:
             print(f"Invalid OpenAI response: {error}")
             self.send_json(502, {"error": "OpenAI 返回的报告格式无效，请稍后重试。"})
+
+    def handle_book_summary(self):
+        expected_origin = f"http://{HOST}:{PORT}"
+        if self.headers.get("Origin") != expected_origin or self.headers.get("Host") != f"{HOST}:{PORT}":
+            self.send_json(403, {"error": "请求来源无效，请从本地 ZINE 页面发起请求。"})
+            return
+
+        api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+        if not api_key:
+            self.send_json(503, {"error": "未配置 OPENAI_API_KEY。请先在启动后端的终端设置 API 密钥。"})
+            return
+
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self.send_json(400, {"error": "请求长度无效。"})
+            return
+        if content_length <= 0 or content_length > MAX_REQUEST_BYTES:
+            self.send_json(413, {"error": "集内容过大，请缩短后重试。"})
+            return
+
+        try:
+            payload = json.loads(self.rfile.read(content_length))
+            books = payload.get("books")
+            if not isinstance(books, list) or not books or len(books) > 20:
+                raise ValueError("总结需要 1 到 20 本集。")
+
+            total_length = 0
+            normalized_books = []
+            for book in books:
+                if not isinstance(book, dict):
+                    raise ValueError("集格式无效。")
+                title = book.get("title")
+                chapters = book.get("chapters")
+                if not isinstance(title, str) or not title.strip() or len(title) > 60:
+                    raise ValueError("集标题无效。")
+                if not isinstance(chapters, list) or len(chapters) > 30:
+                    raise ValueError("章节数量无效。")
+
+                normalized_chapters = []
+                for chapter in chapters:
+                    if not isinstance(chapter, dict):
+                        raise ValueError("章节格式无效。")
+                    chapter_title = chapter.get("title")
+                    texts = chapter.get("texts")
+                    photos = chapter.get("photos")
+                    decorations = chapter.get("decorations")
+                    if not isinstance(chapter_title, str) or not chapter_title.strip() or len(chapter_title) > 60:
+                        raise ValueError("章节标题无效。")
+                    if (
+                        not isinstance(texts, list)
+                        or len(texts) > 60
+                        or not all(
+                            isinstance(item, str) and item.strip() and len(item) <= MAX_ENTRY_LENGTH
+                            for item in texts
+                        )
+                    ):
+                        raise ValueError("章节文字内容无效。")
+                    if (
+                        not isinstance(photos, int)
+                        or not 0 <= photos <= 999
+                        or not isinstance(decorations, int)
+                        or not 0 <= decorations <= 999
+                    ):
+                        raise ValueError("章节统计信息无效。")
+                    total_length += sum(len(item) for item in texts)
+                    normalized_chapters.append({
+                        "title": chapter_title.strip(),
+                        "texts": [item.strip() for item in texts],
+                        "photos": photos,
+                        "decorations": decorations,
+                    })
+                normalized_books.append({"title": title.strip(), "chapters": normalized_chapters})
+            if total_length > MAX_TOTAL_TEXT_LENGTH:
+                raise ValueError("集内容总长度过大，请减少内容后重试。")
+        except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, ValueError) as error:
+            self.send_json(400, {"error": str(error) or "请求内容无效。"})
+            return
+
+        book_text = "\n\n".join(
+            f"【集 {index}】{book['title']}\n"
+            + "\n".join(
+                f"- 章节《{chapter['title']}》："
+                f"{'；'.join(chapter['texts']) if chapter['texts'] else '本章没有文字'}"
+                f"（照片/视频 {chapter['photos']} 个，贴纸/胶带 {chapter['decorations']} 个）"
+                for chapter in book["chapters"]
+            )
+            for index, book in enumerate(normalized_books, start=1)
+        )
+        request_body = {
+            "model": os.environ.get("OPENAI_MODEL", DEFAULT_MODEL),
+            "temperature": 0.7,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是一位温柔、细腻的独立手账杂志编辑。"
+                        "只基于用户提供的集内容写中文总结，不要编造集里没有的内容。"
+                        "从章节标题、文字内容和照片、贴纸等元素的分布中提炼主题与亮点，"
+                        "语气温暖、具体、不评判。输出包含「整体印象」「每集亮点」"
+                        "「出现的主题」「继续创作的小建议」四个小标题，"
+                        "避免重复原文长句，总结控制在 400 字以内。"
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"这是我的 {len(normalized_books)} 本手账集，请根据内容写一篇总结：\n\n{book_text}",
+                },
+            ],
+        }
+        request = Request(
+            OPENAI_URL,
+            data=json.dumps(request_body, ensure_ascii=False).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+
+        try:
+            with urlopen(request, timeout=90) as response:
+                result = json.loads(response.read())
+            report = result["choices"][0]["message"]["content"]
+            if not isinstance(report, str) or not report.strip():
+                raise ValueError("AI 服务返回的总结内容为空。")
+            self.send_json(200, {"report": report.strip()})
+        except HTTPError as error:
+            if error.code in (401, 403):
+                self.send_json(502, {"error": "OpenAI API 密钥无效或无权调用，请检查后端环境变量。"})
+            elif error.code == 429:
+                self.send_json(502, {"error": "OpenAI 请求次数或额度已达限制，请稍后重试。"})
+            else:
+                self.send_json(502, {"error": f"OpenAI 服务暂时不可用（HTTP {error.code}），请稍后重试。"})
+        except (URLError, TimeoutError):
+            self.send_json(502, {"error": "无法连接 OpenAI 服务，请检查网络后重试。"})
+        except (KeyError, IndexError, TypeError, json.JSONDecodeError, ValueError) as error:
+            print(f"Invalid OpenAI response: {error}")
+            self.send_json(502, {"error": "OpenAI 返回的总结格式无效，请稍后重试。"})
 
     def log_message(self, format_string, *args):
         # Keep request logs useful without ever logging journal request bodies.
