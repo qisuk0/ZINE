@@ -27,7 +27,7 @@ html[data-theme="red"] {
 }
 
 html[data-theme="orange"] {
-  --theme-h: 27;
+  --theme-h: 34;
 }
 
 html[data-theme="yellow"] {
@@ -272,36 +272,6 @@ button {
   text-overflow: ellipsis;
 }
 
-.edit-title-btn {
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--purple);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.edit-title-btn:hover {
-  background: var(--purple-soft);
-}
-
-.book-title-input {
-  width: 100%;
-  min-width: 0;
-  height: 30px;
-  border: 1px solid var(--purple);
-  border-radius: 8px;
-  outline: none;
-  padding: 3px 8px;
-  background: var(--card);
-  color: var(--text);
-  font-family: Georgia, "Songti SC", serif;
-  font-size: 16px;
-}
-
 .book-stats {
   font-size: 11px;
   color: #a09bb8;
@@ -330,26 +300,6 @@ button {
 
 .cover:hover {
   transform: scale(1.04);
-}
-
-.cover-edit {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 1.5px solid #fff;
-  border-radius: 50%;
-  background: transparent;
-  color: #fff;
-  font-size: 11px;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.cover-edit:hover {
-  background: rgba(255, 255, 255, 0.16);
 }
 
 /* 展开箭头 */
@@ -703,7 +653,7 @@ button {
 }
 
 .theme-menu [data-theme-name="orange"] {
-  background: hsl(27 72% 55%);
+  background: hsl(34 72% 55%);
 }
 
 .theme-menu [data-theme-name="yellow"] {

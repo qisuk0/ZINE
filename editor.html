@@ -27,7 +27,7 @@
     }
 
     html[data-theme="red"] { --theme-h: 5; }
-    html[data-theme="orange"] { --theme-h: 27; }
+    html[data-theme="orange"] { --theme-h: 34; }
     html[data-theme="yellow"] { --theme-h: 46; }
     html[data-theme="green"] { --theme-h: 145; }
     html[data-theme="blue"] { --theme-h: 214; }
@@ -108,6 +108,136 @@
 
     .done-button:hover {
       filter: brightness(1.08);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .meta-edit-wrap {
+      position: relative;
+    }
+
+    .meta-edit-button {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--purple-soft);
+      border-radius: 50%;
+      background: transparent;
+      color: #514c59;
+    }
+
+    .meta-edit-button[aria-expanded="true"] {
+      background: var(--theme-surface);
+      color: var(--purple);
+    }
+
+    .meta-menu {
+      position: absolute;
+      top: 42px;
+      right: 0;
+      z-index: 20;
+      min-width: 132px;
+      padding: 5px;
+      border: 1px solid var(--purple-soft);
+      border-radius: 11px;
+      background: var(--card);
+      box-shadow: 0 8px 24px hsl(var(--theme-h) 22% 30% / 0.2);
+    }
+
+    .meta-menu[hidden] {
+      display: none;
+    }
+
+    .meta-menu button {
+      display: block;
+      width: 100%;
+      padding: 9px 11px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      text-align: left;
+    }
+
+    .meta-menu button:hover {
+      background: var(--theme-surface);
+    }
+
+    .title-dialog {
+      width: min(calc(100% - 32px), 360px);
+      padding: 0;
+      border: 0;
+      border-radius: 18px;
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 22px 60px rgba(28, 25, 35, 0.3);
+    }
+
+    .title-dialog::backdrop {
+      background: rgba(37, 32, 46, 0.36);
+      backdrop-filter: blur(2px);
+    }
+
+    .title-dialog form {
+      padding: 22px;
+    }
+
+    .title-dialog h2 {
+      margin-bottom: 16px;
+      font: 20px Georgia, "Songti SC", serif;
+    }
+
+    .title-dialog label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--text-sub);
+      font-size: 12px;
+    }
+
+    .title-dialog input {
+      width: 100%;
+      height: 43px;
+      padding: 0 12px;
+      border: 1px solid var(--purple-soft);
+      border-radius: 10px;
+      outline: none;
+      background: #fbfaff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .title-dialog input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px hsl(var(--theme-h) 27% 53% / 0.12);
+    }
+
+    .title-dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .title-dialog-actions button {
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--purple-soft);
+      border-radius: 9px;
+      background: var(--card);
+      font-size: 12px;
+    }
+
+    .title-dialog-actions .title-save-button {
+      border-color: var(--purple);
+      background: var(--purple);
+      color: #fff;
     }
 
     .workspace {
@@ -893,7 +1023,21 @@
     <header class="topbar">
       <button class="back-button" type="button" data-action="back" aria-label="返回">←</button>
       <h1 class="title" id="pageTitle">年糕 · 2025.06.14</h1>
-      <button class="done-button" type="button" data-action="done">完成</button>
+      <div class="topbar-actions">
+        <div class="meta-edit-wrap">
+          <button class="meta-edit-button" type="button" data-action="meta-menu" aria-label="编辑标题和封面" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+            </svg>
+          </button>
+          <div class="meta-menu" id="metaMenu" hidden>
+            <button type="button" data-action="edit-title">编辑标题</button>
+            <button type="button" data-action="edit-cover">修改封面</button>
+          </div>
+        </div>
+        <button class="done-button" type="button" data-action="done">完成</button>
+      </div>
     </header>
 
     <section class="workspace" aria-label="手账编辑画布">
@@ -938,8 +1082,21 @@
       </div>
       <input id="photoInput" type="file" accept="image/*" hidden />
       <input id="videoInput" type="file" accept="video/*" hidden />
+      <input id="coverInput" type="file" accept="image/*" hidden />
     </footer>
   </main>
+
+  <dialog class="title-dialog" id="titleDialog" aria-labelledby="titleDialogHeading">
+    <form id="titleForm">
+      <h2 id="titleDialogHeading">编辑标题</h2>
+      <label for="titleInput">集标题</label>
+      <input id="titleInput" type="text" maxlength="80" required />
+      <div class="title-dialog-actions">
+        <button type="button" data-action="cancel-title">取消</button>
+        <button class="title-save-button" type="submit">保存</button>
+      </div>
+    </form>
+  </dialog>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <defs>
@@ -964,10 +1121,16 @@
     const assetList = document.getElementById("assetList");
     const photoInput = document.getElementById("photoInput");
     const videoInput = document.getElementById("videoInput");
+    const coverInput = document.getElementById("coverInput");
+    const metaMenu = document.getElementById("metaMenu");
+    const metaEditButton = document.querySelector('[data-action="meta-menu"]');
+    const titleDialog = document.getElementById("titleDialog");
+    const titleForm = document.getElementById("titleForm");
+    const titleInput = document.getElementById("titleInput");
     const status = document.getElementById("status");
     const params = new URLSearchParams(window.location.search);
     const bookId = params.get("book");
-    const bookTitle = params.get("title");
+    let bookTitle = params.get("title");
     const chapterTitle = params.get("ch");
     const pageTitle = document.getElementById("pageTitle");
     const storageKey = bookId && chapterTitle
@@ -989,7 +1152,8 @@
     const nextPageButton = document.querySelector('[data-action="next-page"]');
     let selectedId = null;
     let nextId = 1;
-    let currentPage = 0;
+    const requestedPage = Number.parseInt(params.get("page"), 10);
+    let currentPage = Number.isInteger(requestedPage) ? Math.max(0, Math.min(PAGE_COUNT - 1, requestedPage)) : 0;
     let activePanel = "sticker";
     let statusTimer;
     const mediaUrls = new Map();
@@ -1352,7 +1516,7 @@
       save(true);
     }
 
-    function updateBookEditedAt() {
+    function updateBookMetadata(markEdited = false, changes = {}) {
       if (!bookId) return true;
       try {
         const stored = localStorage.getItem("zine_books_v1");
@@ -1361,7 +1525,10 @@
         if (!Array.isArray(savedBooks)) throw new Error("Saved books data must be an array.");
         const book = savedBooks.find((item) => item && item.id === Number(bookId));
         if (!book) throw new Error(`Book ${bookId} was not found.`);
-        book.lastEditedAt = Date.now();
+        if (chapterTitle) book.lastChapter = chapterTitle;
+        book.lastPage = currentPage;
+        if (markEdited) book.lastEditedAt = Date.now();
+        Object.assign(book, changes);
         if (window.ZineCloud) {
           if (!window.ZineCloud.setRecord("zine_books_v1", savedBooks)) {
             throw new Error("Unable to save the updated book list.");
@@ -1376,6 +1543,78 @@
       }
     }
 
+    function updateBookEditedAt(markEdited = false) {
+      return updateBookMetadata(markEdited);
+    }
+
+    function closeMetaMenu() {
+      metaMenu.hidden = true;
+      metaEditButton.setAttribute("aria-expanded", "false");
+    }
+
+    function saveBookTitle(nextTitle) {
+      const title = String(nextTitle || "").trim();
+      if (!title) {
+        showStatus("标题不能为空");
+        return false;
+      }
+      if (!updateBookMetadata(true, { title })) {
+        showStatus("标题保存失败");
+        return false;
+      }
+      bookTitle = title;
+      pageTitle.textContent = `${bookTitle} · ${chapterTitle || "未命名章节"}`;
+      document.title = `${chapterTitle || "手账编辑"} - ${bookTitle} · ZINE集`;
+      const url = new URL(window.location.href);
+      url.searchParams.set("title", bookTitle);
+      window.history.replaceState(null, "", url);
+      showStatus("标题已修改");
+      return true;
+    }
+
+    async function saveBookCover(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        showStatus("请选择图片文件作为封面");
+        return false;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        showStatus("封面图片不能大于 20 MB");
+        return false;
+      }
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const element = new Image();
+          element.addEventListener("load", () => resolve(element), { once: true });
+          element.addEventListener("error", () => reject(new Error("Unable to read the cover image.")), { once: true });
+          element.src = objectUrl;
+        });
+        const maxDimension = 480;
+        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+        const coverCanvas = document.createElement("canvas");
+        coverCanvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        coverCanvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = coverCanvas.getContext("2d");
+        if (!context) throw new Error("Unable to prepare the cover image.");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, coverCanvas.width, coverCanvas.height);
+        context.drawImage(image, 0, 0, coverCanvas.width, coverCanvas.height);
+        const cover = coverCanvas.toDataURL("image/jpeg", 0.82);
+        if (!updateBookMetadata(true, { cover })) {
+          showStatus("封面保存失败");
+          return false;
+        }
+        showStatus("封面已修改");
+        return true;
+      } catch (error) {
+        console.error("Unable to save the selected cover.", error);
+        showStatus("封面处理失败，请换一张图片");
+        return false;
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    }
+
     function save(markEdited = false) {
       if (!editorReady) return true;
       try {
@@ -1385,7 +1624,7 @@
           ? window.ZineCloud.setRecord(storageKey, pageData)
           : (localStorage.setItem(storageKey, JSON.stringify(pageData)), true);
         if (!saved) throw new Error("Unable to save the journal page locally.");
-        const editOrderSaved = !markEdited || updateBookEditedAt();
+        const editOrderSaved = updateBookEditedAt(markEdited);
         showStatus(editOrderSaved ? "已自动保存" : "页面已保存，但编辑顺序更新失败");
         return true;
       } catch (error) {
@@ -1428,12 +1667,12 @@
           throw new Error("Saved journal page data has an invalid format.");
         }
 
-        elements = pages[0];
+        elements = pages[currentPage];
         nextId = pages.flat().reduce((max, item) => Math.max(max, item.id), 0) + 1;
       } catch (error) {
         console.error("Unable to load the saved journal page.", error);
         pages.forEach((page) => page.splice(0, page.length));
-        elements = pages[0];
+        elements = pages[currentPage];
         showStatus("读取存档失败，已新建空白页");
       }
     }
@@ -1448,6 +1687,7 @@
       history.length = 0;
       future.length = 0;
       render();
+      updateBookEditedAt(false);
     }
 
     function finishTextEdit(content, element, original, previousElements, cancelled) {
@@ -1887,11 +2127,48 @@
         selectedId = null;
         render();
         save(true);
+      } else if (button.dataset.action === "meta-menu") {
+        const opening = metaMenu.hidden;
+        metaMenu.hidden = !opening;
+        metaEditButton.setAttribute("aria-expanded", String(opening));
+      } else if (button.dataset.action === "edit-title") {
+        closeMetaMenu();
+        titleInput.value = bookTitle || "";
+        titleDialog.showModal();
+        titleInput.focus();
+        titleInput.select();
+      } else if (button.dataset.action === "edit-cover") {
+        closeMetaMenu();
+        coverInput.click();
+      } else if (button.dataset.action === "cancel-title") {
+        titleDialog.close();
       } else if (button.dataset.action === "done") {
         if (save()) window.history.back();
       } else if (button.dataset.action === "back") {
         save();
         window.history.back();
+      }
+    });
+
+    titleForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (saveBookTitle(titleInput.value)) titleDialog.close();
+    });
+
+    coverInput.addEventListener("change", async () => {
+      const file = coverInput.files && coverInput.files[0];
+      coverInput.value = "";
+      if (file) await saveBookCover(file);
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!metaMenu.hidden && !event.target.closest(".meta-edit-wrap")) closeMetaMenu();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !metaMenu.hidden) {
+        closeMetaMenu();
+        metaEditButton.focus();
       }
     });
 
@@ -2001,6 +2278,7 @@
         console.error("Unable to finish account sync before opening the editor.", error);
       }
       load();
+      elements = pages[currentPage];
       await migrateEmbeddedPhotos();
       render();
       showPanel("sticker");

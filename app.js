@@ -48,9 +48,7 @@ function saveBooks() {
 
 let books = [];
 const sortSelect = document.getElementById("sortSelect");
-const coverInput = document.getElementById("coverInput");
 let sortMode = "edited";
-let pendingCoverBookId = null;
 
 function markBookEdited(book) {
   book.lastEditedAt = Date.now();
@@ -111,13 +109,11 @@ function render() {
         <div class="book-info">
           <div class="book-title-wrap">
             <h2 class="book-title">${escapeHtml(book.title)}</h2>
-            <button class="edit-title-btn" type="button" data-action="edit-title" aria-label="修改书名">✎</button>
           </div>
           <p class="book-stats">记录${book.days}天</p>
         </div>
         <div class="cover-wrap">
           <button class="cover" data-action="open-book" aria-label="进入预览界面" title="进入预览界面"></button>
-          <button class="cover-edit" type="button" data-action="change-cover" aria-label="更换封面" title="更换封面">✎</button>
         </div>
         <button class="expand-btn" data-action="toggle-chapters" aria-label="展开章节">▾</button>
       </div>
@@ -163,53 +159,7 @@ bookList.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
 
-  if (btn.dataset.action === "change-cover") {
-    e.preventDefault();
-    pendingCoverBookId = Number(btn.closest(".book-card").dataset.id);
-    coverInput.click();
-  } else if (btn.dataset.action === "edit-title") {
-    e.preventDefault();
-    const card = btn.closest(".book-card");
-    const book = books.find((item) => item.id === Number(card.dataset.id));
-    const titleWrap = card.querySelector(".book-title-wrap");
-    const input = document.createElement("input");
-    input.className = "book-title-input";
-    input.type = "text";
-    input.maxLength = 80;
-    input.value = book.title;
-    input.setAttribute("aria-label", "书籍标题");
-    titleWrap.replaceChildren(input);
-    input.focus();
-    input.select();
-
-    let finished = false;
-    const finish = (commit) => {
-      if (finished) return;
-      finished = true;
-      if (commit) {
-        const title = input.value.trim();
-        if (title) {
-          if (title !== book.title) {
-            book.title = title;
-            markBookEdited(book);
-            saveBooks();
-          }
-        }
-      }
-      render();
-    };
-
-    input.addEventListener("keydown", (keyEvent) => {
-      if (keyEvent.key === "Enter") {
-        keyEvent.preventDefault();
-        finish(true);
-      } else if (keyEvent.key === "Escape") {
-        keyEvent.preventDefault();
-        finish(false);
-      }
-    });
-    input.addEventListener("blur", () => finish(true), { once: true });
-  } else if (btn.dataset.action === "toggle-chapters") {
+  if (btn.dataset.action === "toggle-chapters") {
     const card = btn.closest(".book-card");
     card.querySelector(".chapters").classList.toggle("open");
     btn.classList.toggle("open");
@@ -231,66 +181,6 @@ bookList.addEventListener("click", (e) => {
   // "open-book"（点击封面）使用 <a> 跳转，无需额外处理
 });
 
-coverInput.addEventListener("change", () => {
-  const file = coverInput.files && coverInput.files[0];
-  const book = books.find((item) => item.id === pendingCoverBookId);
-  pendingCoverBookId = null;
-  coverInput.value = "";
-  if (!file || !book) return;
-  if (!file.type.startsWith("image/")) {
-    window.alert("请选择图片文件作为封面。");
-    return;
-  }
-  if (file.size > 20 * 1024 * 1024) {
-    window.alert("封面图片不能大于 20 MB。");
-    return;
-  }
-
-  const image = new Image();
-  const objectUrl = URL.createObjectURL(file);
-  image.addEventListener("load", () => {
-    URL.revokeObjectURL(objectUrl);
-    const maxDimension = 480;
-    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-    const context = canvas.getContext("2d");
-    if (!context) {
-      window.alert("无法处理这张封面图片，请尝试其他图片。");
-      return;
-    }
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    const previousCover = book.cover;
-    const previousLastEditedAt = book.lastEditedAt;
-    try {
-      book.cover = canvas.toDataURL("image/jpeg", 0.82);
-    } catch (error) {
-      console.error("Unable to process the selected book cover.", error);
-      window.alert("封面图片处理失败，请尝试其他图片。");
-      return;
-    }
-    markBookEdited(book);
-    if (!saveBooks()) {
-      if (previousCover === undefined) delete book.cover;
-      else book.cover = previousCover;
-      if (previousLastEditedAt === undefined) delete book.lastEditedAt;
-      else book.lastEditedAt = previousLastEditedAt;
-      return;
-    }
-    render();
-  });
-  image.addEventListener("error", () => {
-    URL.revokeObjectURL(objectUrl);
-    console.error("Unable to load the selected book cover.");
-    window.alert("无法读取这张封面图片，请尝试其他图片。");
-  }, { once: true });
-  image.src = objectUrl;
-});
-
 // 点击封面（紫色小方块）→ 进入预览界面
 bookList.addEventListener("click", (e) => {
   const cover = e.target.closest('[data-action="open-book"]');
@@ -298,6 +188,17 @@ bookList.addEventListener("click", (e) => {
     const id = cover.closest(".book-card").dataset.id;
     window.location.href = `preview.html?id=${id}`;
   }
+});
+
+bookList.addEventListener("click", (e) => {
+  if (e.target.closest("button, a, input, select, textarea, .chapters")) return;
+  const card = e.target.closest(".book-card");
+  if (!card) return;
+  const book = books.find((item) => item.id === Number(card.dataset.id));
+  if (!book || !Array.isArray(book.chapters) || !book.chapters.length) return;
+  const chapter = book.chapters.includes(book.lastChapter) ? book.lastChapter : book.chapters[0];
+  const page = Number.isInteger(book.lastPage) ? Math.max(0, Math.min(4, book.lastPage)) : 0;
+  window.location.href = `editor.html?book=${encodeURIComponent(book.id)}&title=${encodeURIComponent(book.title)}&ch=${encodeURIComponent(chapter)}&page=${page}`;
 });
 
 searchButton.addEventListener("click", () => {
@@ -432,6 +333,11 @@ async function startBookPage() {
   }
 
   books = loadBooks();
+  try {
+    if (localStorage.getItem(BOOKS_STORAGE_KEY) === null) saveBooks();
+  } catch (error) {
+    console.error("Unable to initialize the default book list.", error);
+  }
   try {
     const savedSortMode = localStorage.getItem(SORT_STORAGE_KEY);
     let storedMode = savedSortMode;
