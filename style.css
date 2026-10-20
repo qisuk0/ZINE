@@ -707,8 +707,8 @@ button {
 }
 
 .theme-menu [data-theme-name="mono"] {
-  border-color: #b7b7b7;
-  background: linear-gradient(135deg, #1f1f1f 0 50%, #fff 50% 100%);
+  border-color: #000;
+  background: #000;
 }
 
 .theme-menu [data-theme-name="green"] {
