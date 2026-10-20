@@ -61,6 +61,10 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    #nl-badge-frame {
+      display: none !important;
+    }
+
     button {
       color: inherit;
       font: inherit;
@@ -1522,6 +1526,10 @@
       save(true);
     }
 
+    function localDateKey(date = new Date()) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
     function updateBookMetadata(markEdited = false, changes = {}) {
       if (!bookId) return true;
       try {
@@ -1533,7 +1541,16 @@
         if (!book) throw new Error(`Book ${bookId} was not found.`);
         if (chapterTitle) book.lastChapter = chapterTitle;
         book.lastPage = currentPage;
-        if (markEdited) book.lastEditedAt = Date.now();
+        if (markEdited) {
+          const recordedDays = Array.isArray(book.recordedDays)
+            ? [...new Set(book.recordedDays.filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day)))]
+            : [];
+          const today = localDateKey();
+          if (!recordedDays.includes(today)) recordedDays.push(today);
+          book.recordedDays = recordedDays;
+          book.days = Math.max(Number(book.days) || 0, recordedDays.length);
+          book.lastEditedAt = Date.now();
+        }
         Object.assign(book, changes);
         if (window.ZineCloud) {
           if (!window.ZineCloud.setRecord("zine_books_v1", savedBooks)) {

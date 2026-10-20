@@ -3,10 +3,6 @@ const BOOKS_STORAGE_KEY = "zine_books_v1";
 const SORT_STORAGE_KEY = "zine_sort_mode_v1";
 const defaultBooks = [
   { id: 1, title: "默认标题", days: 0, chapters: ["第一章"] },
-  { id: 2, title: "默认标题", days: 0, chapters: ["第一章"] },
-  { id: 3, title: "默认标题", days: 0, chapters: ["第一章"] },
-  { id: 4, title: "默认标题", days: 0, chapters: ["第一章"] },
-  { id: 5, title: "默认标题", days: 0, chapters: ["第一章"] },
 ];
 
 function loadBooks() {
@@ -52,6 +48,18 @@ let sortMode = "edited";
 
 function markBookEdited(book) {
   book.lastEditedAt = Date.now();
+}
+
+function isBlankDefaultBook(book) {
+  return book
+    && book.title === "默认标题"
+    && Number(book.days) === 0
+    && Array.isArray(book.chapters)
+    && book.chapters.length === 1
+    && book.chapters[0] === "第一章"
+    && !book.cover
+    && !book.lastEditedAt
+    && (!Array.isArray(book.recordedDays) || book.recordedDays.length === 0);
 }
 
 // 中文数字（用于章节命名：第二章、第三章……）
@@ -249,7 +257,14 @@ sortSelect.addEventListener("change", () => {
 // 点击加号框 → 新建一本"书"（默认横框初始状态）
 document.getElementById("createBookBtn").addEventListener("click", () => {
   const nextId = books.length ? Math.max(...books.map((b) => b.id)) + 1 : 1;
-  books.push({ id: nextId, title: "默认标题", days: 0, chapters: ["第一章"], lastEditedAt: Date.now() });
+  books.push({
+    id: nextId,
+    title: "默认标题",
+    days: 0,
+    chapters: ["第一章"],
+    recordedDays: [],
+    lastEditedAt: Date.now(),
+  });
   saveBooks();
   render();
   // 滚动到新建的横框
@@ -333,6 +348,12 @@ async function startBookPage() {
   }
 
   books = loadBooks();
+  const firstBlankBook = books.findIndex(isBlankDefaultBook);
+  const compactedBooks = books.filter((book, index) => !isBlankDefaultBook(book) || index === firstBlankBook);
+  if (compactedBooks.length !== books.length) {
+    books = compactedBooks;
+    saveBooks();
+  }
   try {
     if (localStorage.getItem(BOOKS_STORAGE_KEY) === null) saveBooks();
   } catch (error) {
