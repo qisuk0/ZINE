@@ -19,7 +19,7 @@ let chapters = [];
 let leaf = 0;
 let animating = false;
 let totalPages = DEFAULT_TOTAL_PAGES;
-const videoUrls = new Map();
+const mediaUrls = new Map();
 let mediaDbPromise;
 
 function openMediaDb() {
@@ -39,15 +39,15 @@ function openMediaDb() {
   return mediaDbPromise;
 }
 
-async function cacheVideoBlob(id, blob) {
+async function cacheMediaBlob(id, blob) {
   const db = await openMediaDb();
   await new Promise((resolve, reject) => {
     const transaction = db.transaction("media", "readwrite");
     transaction.objectStore("media").put({
       id,
       blob,
-      name: blob.name || `${id}.mp4`,
-      type: blob.type || "video/mp4",
+      name: blob.name || id,
+      type: blob.type || "application/octet-stream",
     });
     transaction.addEventListener("complete", resolve, { once: true });
     transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to cache the video.")), { once: true });
@@ -55,8 +55,8 @@ async function cacheVideoBlob(id, blob) {
   });
 }
 
-async function getVideoUrl(id, cloudPath) {
-  if (videoUrls.has(id)) return videoUrls.get(id);
+async function getMediaUrl(id, cloudPath) {
+  if (mediaUrls.has(id)) return mediaUrls.get(id);
   const db = await openMediaDb();
   const record = await new Promise((resolve, reject) => {
     const request = db.transaction("media", "readonly").objectStore("media").get(id);
@@ -66,11 +66,11 @@ async function getVideoUrl(id, cloudPath) {
   let blob = record && record.blob instanceof Blob ? record.blob : null;
   if (!blob && cloudPath && window.ZineCloud) {
     blob = await ZineCloud.downloadMedia(cloudPath);
-    if (blob) await cacheVideoBlob(id, blob);
+    if (blob) await cacheMediaBlob(id, blob);
   }
   if (!blob) throw new Error("The saved video file is missing.");
   const url = URL.createObjectURL(blob);
-  videoUrls.set(id, url);
+  mediaUrls.set(id, url);
   return url;
 }
 
@@ -175,8 +175,17 @@ function createPreviewElement(element) {
   if (element.type === "photo") {
     node.style.height = `${element.h}%`;
     const image = document.createElement("img");
-    image.src = element.src;
     image.alt = "章节照片";
+    if (element.src) {
+      image.src = element.src;
+    } else if (element.mediaId) {
+      getMediaUrl(element.mediaId, element.cloudPath).then((url) => {
+        if (node.isConnected) image.src = url;
+      }).catch((error) => {
+        console.error("Unable to load the saved photo for preview.", error);
+        if (node.isConnected) previewStatus.textContent = "读取照片失败，请重新添加照片";
+      });
+    }
     node.append(image);
   } else if (element.type === "video") {
     node.style.height = `${element.h}%`;
@@ -191,7 +200,7 @@ function createPreviewElement(element) {
       console.error("Unable to play the saved video in preview.");
       previewStatus.textContent = "视频无法播放，请检查文件格式";
     }, { once: true });
-    getVideoUrl(element.videoId, element.cloudPath).then((url) => {
+    getMediaUrl(element.videoId, element.cloudPath).then((url) => {
       if (node.isConnected) player.src = url;
     }).catch((error) => {
       console.error("Unable to load the saved video for preview.", error);

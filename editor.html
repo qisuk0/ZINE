@@ -676,7 +676,7 @@
     let currentPage = 0;
     let activePanel = "sticker";
     let statusTimer;
-    const videoUrls = new Map();
+    const mediaUrls = new Map();
     let mediaDbPromise;
     let editorReady = false;
 
@@ -697,49 +697,58 @@
       return mediaDbPromise;
     }
 
-    async function storeVideo(file, id) {
+    async function storeMedia(file, id) {
       const db = await openMediaDb();
       await new Promise((resolve, reject) => {
         const transaction = db.transaction("media", "readwrite");
-        transaction.objectStore("media").put({ id, blob: file, name: file.name, type: file.type });
+        transaction.objectStore("media").put({
+          id,
+          blob: file,
+          name: file.name || id,
+          type: file.type || "application/octet-stream",
+        });
         transaction.addEventListener("complete", resolve, { once: true });
-        transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to save the video.")), { once: true });
-        transaction.addEventListener("abort", () => reject(transaction.error || new Error("Video save was cancelled.")), { once: true });
+        transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to save the media.")), { once: true });
+        transaction.addEventListener("abort", () => reject(transaction.error || new Error("Media save was cancelled.")), { once: true });
       });
     }
 
-    async function cacheVideoBlob(id, blob) {
+    async function readMediaRecord(id) {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const request = db.transaction("media", "readonly").objectStore("media").get(id);
+        request.addEventListener("success", () => resolve(request.result), { once: true });
+        request.addEventListener("error", () => reject(request.error || new Error("Unable to read the saved media.")), { once: true });
+      });
+    }
+
+    async function cacheMediaBlob(id, blob) {
       const db = await openMediaDb();
       await new Promise((resolve, reject) => {
         const transaction = db.transaction("media", "readwrite");
         transaction.objectStore("media").put({
           id,
           blob,
-          name: blob.name || `${id}.mp4`,
-          type: blob.type || "video/mp4",
+          name: blob.name || id,
+          type: blob.type || "application/octet-stream",
         });
         transaction.addEventListener("complete", resolve, { once: true });
-        transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to cache the video.")), { once: true });
-        transaction.addEventListener("abort", () => reject(transaction.error || new Error("Video caching was cancelled.")), { once: true });
+        transaction.addEventListener("error", () => reject(transaction.error || new Error("Unable to cache the media.")), { once: true });
+        transaction.addEventListener("abort", () => reject(transaction.error || new Error("Media caching was cancelled.")), { once: true });
       });
     }
 
-    async function getVideoUrl(id, cloudPath) {
-      if (videoUrls.has(id)) return videoUrls.get(id);
-      const db = await openMediaDb();
-      const record = await new Promise((resolve, reject) => {
-        const request = db.transaction("media", "readonly").objectStore("media").get(id);
-        request.addEventListener("success", () => resolve(request.result), { once: true });
-        request.addEventListener("error", () => reject(request.error || new Error("Unable to read the saved video.")), { once: true });
-      });
+    async function getMediaUrl(id, cloudPath) {
+      if (mediaUrls.has(id)) return mediaUrls.get(id);
+      const record = await readMediaRecord(id);
       let blob = record && record.blob instanceof Blob ? record.blob : null;
       if (!blob && cloudPath && window.ZineCloud) {
         blob = await ZineCloud.downloadMedia(cloudPath);
-        if (blob) await cacheVideoBlob(id, blob);
+        if (blob) await cacheMediaBlob(id, blob);
       }
-      if (!blob) throw new Error("The saved video file is missing.");
+      if (!blob) throw new Error("The saved media file is missing.");
       const url = URL.createObjectURL(blob);
-      videoUrls.set(id, url);
+      mediaUrls.set(id, url);
       return url;
     }
 
@@ -796,6 +805,86 @@
       return samplePhoto("#c8d3c3", "#a8ba9e", "a lovely day");
     }
 
+    function dataUrlToBlob(dataUrl) {
+      return fetch(dataUrl).then((response) => response.blob());
+    }
+
+    async function compressPhoto(file) {
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const element = new Image();
+          element.addEventListener("load", () => resolve(element), { once: true });
+          element.addEventListener("error", () => reject(new Error("Unable to read the selected photo.")), { once: true });
+          element.src = objectUrl;
+        });
+        const maxDimension = 1600;
+        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Unable to prepare the selected photo.");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const blob = await new Promise((resolve, reject) => {
+          canvas.toBlob(
+            (result) => result ? resolve(result) : reject(new Error("Unable to compress the selected photo.")),
+            "image/jpeg",
+            0.82
+          );
+        });
+        return new File([blob], `${file.name.replace(/\.[^.]+$/, "") || "photo"}.jpg`, {
+          type: "image/jpeg",
+        });
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    }
+
+    async function uploadElementPhoto(element) {
+      if (!element.mediaId || element.cloudPath || !window.ZineCloud) return false;
+      const snapshot = ZineCloud.getSnapshot();
+      if (!snapshot.user) return false;
+      const record = await readMediaRecord(element.mediaId);
+      if (!record || !(record.blob instanceof Blob)) return false;
+      const cloudPath = await ZineCloud.uploadMedia(record.blob, element.mediaId);
+      if (!cloudPath) return false;
+      element.cloudPath = cloudPath;
+      return true;
+    }
+
+    async function migrateEmbeddedPhotos() {
+      let changed = false;
+      for (const page of pages) {
+        for (const element of page) {
+          if (element.type !== "photo") continue;
+          if (typeof element.src === "string" && /^data:image\/(?!svg\+xml)[^;]+;base64,/i.test(element.src)) {
+            try {
+              const blob = await dataUrlToBlob(element.src);
+              const mediaId = `photo-${bookId || "draft"}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+              await storeMedia(blob, mediaId);
+              element.mediaId = mediaId;
+              delete element.src;
+              await uploadElementPhoto(element);
+              changed = true;
+            } catch (error) {
+              console.error("Unable to move an embedded photo into local media storage.", error);
+            }
+          } else if (element.mediaId && !element.cloudPath) {
+            try {
+              if (await uploadElementPhoto(element)) changed = true;
+            } catch (error) {
+              console.error("Unable to upload a pending page photo.", error);
+            }
+          }
+        }
+      }
+      if (changed) showStatus("照片已改用本地媒体存储");
+      return changed;
+    }
+
     function seedElements() {
       const cozy = samplePhoto("#c8d3c3", "#a8ba9e", "a lovely day");
       const blush = samplePhoto("#e3c6bc", "#cbaa9b", "little moments");
@@ -843,8 +932,17 @@
         node.style.height = `${element.h}%`;
         if (element.large) node.classList.add("el-photo-large");
         const image = document.createElement("img");
-        image.src = element.src;
         image.alt = "拼贴照片";
+        if (element.src) {
+          image.src = element.src;
+        } else if (element.mediaId) {
+          getMediaUrl(element.mediaId, element.cloudPath).then((url) => {
+            if (node.isConnected) image.src = url;
+          }).catch((error) => {
+            console.error("Unable to load the saved photo.", error);
+            if (node.isConnected) showStatus("读取照片失败，请重新添加照片");
+          });
+        }
         node.append(image);
         if (element.large) {
           const clip = document.createElement("span");
@@ -861,7 +959,7 @@
         player.preload = "metadata";
         player.setAttribute("aria-label", element.name ? `播放视频：${element.name}` : "播放视频");
         player.addEventListener("error", () => showStatus("视频无法播放，请检查文件格式"), { once: true });
-        getVideoUrl(element.videoId, element.cloudPath).then((url) => {
+        getMediaUrl(element.videoId, element.cloudPath).then((url) => {
           if (node.isConnected) player.src = url;
         }).catch((error) => {
           console.error("Unable to load the saved video.", error);
@@ -1323,31 +1421,41 @@
       }
     });
 
-    photoInput.addEventListener("change", () => {
+    photoInput.addEventListener("change", async () => {
       const file = photoInput.files && photoInput.files[0];
+      photoInput.value = "";
       if (!file) return;
       if (!file.type.startsWith("image/")) {
         showStatus("请选择图片文件");
-        photoInput.value = "";
         return;
       }
-      if (file.size > 3 * 1024 * 1024) {
-        showStatus("照片不能大于 3 MB");
-        photoInput.value = "";
+      if (file.size > 20 * 1024 * 1024) {
+        showStatus("照片不能大于 20 MB");
         return;
       }
 
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        if (typeof reader.result !== "string") {
-          showStatus("读取照片失败");
-          return;
+      const photoId = `photo-${bookId || "draft"}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      try {
+        showStatus("正在处理照片…");
+        const compressed = await compressPhoto(file);
+        await storeMedia(compressed, photoId);
+        mediaUrls.set(photoId, URL.createObjectURL(compressed));
+        let cloudPath = null;
+        const snapshot = window.ZineCloud ? ZineCloud.getSnapshot() : { user: null };
+        if (snapshot.user) {
+          showStatus("正在把照片保存到账号…");
+          try {
+            cloudPath = await ZineCloud.uploadMedia(compressed, photoId);
+          } catch (uploadError) {
+            console.error("Unable to upload the selected photo to the account.", uploadError);
+            showStatus("照片已保存在本机，账号上传稍后重试");
+          }
         }
-        addElement({ type: "photo", src: reader.result, w: 29, h: 24 });
-      });
-      reader.addEventListener("error", () => showStatus("读取照片失败"));
-      reader.readAsDataURL(file);
-      photoInput.value = "";
+        addElement({ type: "photo", mediaId: photoId, cloudPath, w: 29, h: 24 });
+      } catch (error) {
+        console.error("Unable to save the selected photo.", error);
+        showStatus("照片处理失败，请换一张图片重试");
+      }
     });
 
     videoInput.addEventListener("change", async () => {
@@ -1365,8 +1473,8 @@
 
       const videoId = `video-${bookId || "draft"}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       try {
-        await storeVideo(file, videoId);
-        videoUrls.set(videoId, URL.createObjectURL(file));
+        await storeMedia(file, videoId);
+        mediaUrls.set(videoId, URL.createObjectURL(file));
         let cloudPath = null;
         if (window.ZineCloud) {
           showStatus("正在把视频保存到账号…");
@@ -1411,6 +1519,7 @@
         console.error("Unable to finish account sync before opening the editor.", error);
       }
       load();
+      await migrateEmbeddedPhotos();
       render();
       showPanel("sticker");
       editorReady = true;
@@ -1421,8 +1530,8 @@
 
     window.addEventListener("pagehide", save);
     window.addEventListener("pagehide", () => {
-      videoUrls.forEach((url) => URL.revokeObjectURL(url));
-      videoUrls.clear();
+      mediaUrls.forEach((url) => URL.revokeObjectURL(url));
+      mediaUrls.clear();
     }, { once: true });
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") save();
