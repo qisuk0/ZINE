@@ -13,16 +13,25 @@
     }
 
     :root {
-      --bg: #f4f2f9;
+      --theme-h: 251;
+      --bg: hsl(var(--theme-h) 34% 96%);
       --card: #ffffff;
-      --paper: #e7e3f2;
-      --text: #1c1a22;
-      --text-sub: #9a97a6;
-      --purple: #7165a8;
-      --purple-soft: #dcd6ee;
+      --paper: hsl(var(--theme-h) 37% 92%);
+      --text: hsl(var(--theme-h) 12% 12%);
+      --text-sub: hsl(var(--theme-h) 9% 60%);
+      --purple: hsl(var(--theme-h) 27% 53%);
+      --purple-soft: hsl(var(--theme-h) 42% 89%);
+      --theme-surface: hsl(var(--theme-h) 40% 95%);
       --radius: 20px;
       --ink-warm: #665746;
     }
+
+    html[data-theme="red"] { --theme-h: 5; }
+    html[data-theme="orange"] { --theme-h: 27; }
+    html[data-theme="yellow"] { --theme-h: 46; }
+    html[data-theme="green"] { --theme-h: 145; }
+    html[data-theme="blue"] { --theme-h: 214; }
+    html[data-theme="purple"] { --theme-h: 251; }
 
     body {
       min-height: 100vh;
@@ -601,7 +610,7 @@
       margin-bottom: 5px;
       padding: 7px 5px;
       border-radius: 11px;
-      background: #f7f5fa;
+      background: var(--theme-surface);
     }
 
     .asset-panel.open {
@@ -946,6 +955,7 @@
   <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="cloud-store.js"></script>
+  <script src="theme.js"></script>
   <script>
     const canvas = document.getElementById("canvas");
     const editor = document.querySelector(".editor");

@@ -6,15 +6,44 @@
 }
 
 :root {
-  --bg: #f4f2f9;            /* 页面雾紫白 */
+  --theme-h: 251;
+  --bg: hsl(var(--theme-h) 34% 96%);
   --card: #ffffff;
-  --paper: #e7e3f2;         /* 书页浅紫（淡、低饱和） */
-  --text: #1c1a22;
-  --text-sub: #9a97a6;
-  --purple: #7165a8;        /* 静谧明亮的紫 */
-  --purple-soft: #dcd6ee;   /* 浅紫分隔 */
-  --cover: #4f4569;         /* 书籍封面默认深紫 */
+  --paper: hsl(var(--theme-h) 37% 92%);
+  --text: hsl(var(--theme-h) 12% 12%);
+  --text-sub: hsl(var(--theme-h) 9% 60%);
+  --purple: hsl(var(--theme-h) 27% 53%);
+  --purple-soft: hsl(var(--theme-h) 42% 89%);
+  --cover: hsl(var(--theme-h) 23% 35%);
+  --theme-surface: hsl(var(--theme-h) 40% 95%);
+  --theme-line: hsl(var(--theme-h) 35% 88%);
+  --theme-strong: hsl(var(--theme-h) 27% 46%);
+  --theme-bright: hsl(var(--theme-h) 33% 62%);
   --radius: 20px;
+}
+
+html[data-theme="red"] {
+  --theme-h: 5;
+}
+
+html[data-theme="orange"] {
+  --theme-h: 27;
+}
+
+html[data-theme="yellow"] {
+  --theme-h: 46;
+}
+
+html[data-theme="green"] {
+  --theme-h: 145;
+}
+
+html[data-theme="blue"] {
+  --theme-h: 214;
+}
+
+html[data-theme="purple"] {
+  --theme-h: 251;
 }
 
 body {
@@ -22,6 +51,10 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+}
+
+#nl-badge-frame {
+  display: none !important;
 }
 
 .app {
@@ -62,7 +95,7 @@ button {
   width: 34px;
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #8a7cc0, #55496e);
+  background: linear-gradient(90deg, var(--theme-bright), var(--cover));
   margin-top: 2px;
 }
 
@@ -95,7 +128,7 @@ button {
 
 .search-input:focus {
   border-color: var(--purple);
-  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.12);
+  box-shadow: 0 0 0 3px hsl(var(--theme-h) 27% 53% / 0.12);
 }
 
 .search-empty {
@@ -119,7 +152,7 @@ button {
 }
 
 .icon-btn:hover {
-  background: #edeaf6;
+  background: var(--theme-surface);
 }
 
 /* ===== 排列顺序 ===== */
@@ -137,20 +170,20 @@ button {
   border-radius: 999px;
   border: 1px solid var(--purple-soft);
   background: var(--card);
-  box-shadow: 0 1px 5px rgba(113, 101, 168, 0.1);
+  box-shadow: 0 1px 5px hsl(var(--theme-h) 27% 53% / 0.1);
   font-size: 12px;
   color: var(--text);
   transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .chip:hover {
-  box-shadow: 0 3px 10px rgba(113, 101, 168, 0.16);
+  box-shadow: 0 3px 10px hsl(var(--theme-h) 27% 53% / 0.16);
   transform: translateY(-1px);
 }
 
 .chip:active {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(113, 101, 168, 0.1);
+  box-shadow: 0 1px 4px hsl(var(--theme-h) 27% 53% / 0.1);
 }
 
 .sort-chip {
@@ -204,7 +237,7 @@ button {
 .book-card {
   background: var(--paper);
   border-radius: var(--radius);
-  box-shadow: 0 2px 10px rgba(113, 101, 168, 0.09);
+  box-shadow: 0 2px 10px hsl(var(--theme-h) 27% 53% / 0.09);
   padding: 16px;
   overflow: hidden;
 }
@@ -288,8 +321,8 @@ button {
   height: 100%;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #8a7cc0, #6c5f9e);
-  box-shadow: 0 4px 10px rgba(113, 101, 168, 0.18);
+  background: linear-gradient(135deg, var(--theme-bright), var(--theme-strong));
+  box-shadow: 0 4px 10px hsl(var(--theme-h) 27% 53% / 0.18);
   transition: transform 0.15s;
   background-position: center;
   background-size: cover;
@@ -301,20 +334,22 @@ button {
 
 .cover-edit {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
-  width: 25px;
-  height: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  right: 3px;
+  bottom: 3px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1.5px solid #fff;
   border-radius: 50%;
-  background: rgba(49, 43, 69, 0.68);
+  background: transparent;
   color: #fff;
-  font-size: 14px;
+  font-size: 11px;
   line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .cover-edit:hover {
-  background: var(--purple);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 /* 展开箭头 */
@@ -371,7 +406,7 @@ button {
 }
 
 .chapters li a:hover {
-  background: #e1dbf0;
+  background: var(--purple-soft);
 }
 
 .chapters li a::after {
@@ -398,7 +433,7 @@ button {
 }
 
 .add-chapter:hover {
-  background: #e1dbf0;
+  background: var(--purple-soft);
   color: var(--purple);
 }
 
@@ -419,7 +454,7 @@ button {
 }
 
 .create-box:hover {
-  background: #edeaf6;
+  background: var(--theme-surface);
 }
 
 /* ===== 底部导航 ===== */
@@ -433,7 +468,7 @@ button {
   background: var(--card);
   border: 1px solid rgba(220, 214, 238, 0.6);
   border-radius: 999px;
-  box-shadow: 0 6px 24px rgba(113, 101, 168, 0.16);
+  box-shadow: 0 6px 24px hsl(var(--theme-h) 27% 53% / 0.16);
   display: flex;
   padding: 10px 0;
 }
@@ -512,13 +547,13 @@ button {
 
 .diary-page {
   padding: 20px;
-  border: 1px solid #e8e2f0;
+  border: 1px solid var(--theme-line);
   border-radius: 20px;
   background:
     radial-gradient(rgba(170, 153, 118, 0.14) 0.65px, transparent 0.8px),
     #fffefa;
   background-size: 6px 6px, 100% 100%;
-  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+  box-shadow: 0 8px 28px hsl(var(--theme-h) 22% 30% / 0.08);
 }
 
 .diary-header {
@@ -566,7 +601,7 @@ button {
   min-height: min(58vh, 520px);
   resize: vertical;
   padding: 15px;
-  border: 1px solid #e8e2f0;
+  border: 1px solid var(--theme-line);
   border-radius: 12px;
   outline: none;
   background: rgba(255, 255, 255, 0.84);
@@ -576,7 +611,7 @@ button {
 
 .diary-page textarea:focus {
   border-color: var(--purple-soft);
-  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.1);
+  box-shadow: 0 0 0 3px hsl(var(--theme-h) 27% 53% / 0.1);
 }
 
 .diary-status {
@@ -597,48 +632,119 @@ button {
 }
 
 .me-page {
+  position: relative;
   max-width: 480px;
   min-height: 100vh;
   margin: 0 auto;
-  padding: 24px 16px 110px;
+  padding: 72px 16px 110px;
 }
 
-.me-page .back-link {
-  margin-bottom: 22px;
+.me-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.me-header {
-  margin-bottom: 24px;
-  padding: 4px 2px;
+.theme-toggle {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  z-index: 31;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--purple);
+  box-shadow: 0 3px 12px hsl(var(--theme-h) 27% 43% / 0.24);
+  color: #fff;
 }
 
-.me-header h1 {
-  margin-bottom: 7px;
-  font-family: Georgia, "Songti SC", serif;
-  font-size: 30px;
+.theme-toggle:hover {
+  filter: brightness(1.06);
 }
 
-.me-header > p:last-child {
-  color: var(--text-sub);
-  font-size: 13px;
+.theme-menu {
+  position: absolute;
+  top: 66px;
+  right: 16px;
+  z-index: 32;
+  display: grid;
+  grid-template-columns: repeat(3, 32px);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--theme-line);
+  border-radius: 15px;
+  background: var(--card);
+  box-shadow: 0 10px 30px hsl(var(--theme-h) 22% 30% / 0.2);
+}
+
+.theme-menu[hidden] {
+  display: none;
+}
+
+.theme-menu button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 3px solid var(--card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--theme-line);
+}
+
+.theme-menu button[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--text);
+}
+
+.theme-menu [data-theme-name="red"] {
+  background: hsl(5 66% 55%);
+}
+
+.theme-menu [data-theme-name="orange"] {
+  background: hsl(27 72% 55%);
+}
+
+.theme-menu [data-theme-name="yellow"] {
+  background: hsl(46 74% 52%);
+}
+
+.theme-menu [data-theme-name="green"] {
+  background: hsl(145 42% 46%);
+}
+
+.theme-menu [data-theme-name="blue"] {
+  background: hsl(214 55% 52%);
+}
+
+.theme-menu [data-theme-name="purple"] {
+  background: hsl(251 36% 57%);
+}
+
+.me-main .account-card,
+.me-main .report-card {
+  margin-bottom: 0;
+  padding: 18px;
+  border-radius: 18px;
 }
 
 .account-card {
   margin-bottom: 16px;
   padding: 20px;
-  border: 1px solid #ddd7ec;
+  border: 1px solid var(--theme-line);
   border-radius: 20px;
   background:
-    linear-gradient(135deg, rgba(250, 248, 255, 0.96), rgba(244, 240, 251, 0.92)),
+    linear-gradient(135deg, hsl(var(--theme-h) 40% 98% / 0.96), hsl(var(--theme-h) 38% 95% / 0.92)),
     var(--card);
-  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+  box-shadow: 0 8px 28px hsl(var(--theme-h) 22% 30% / 0.08);
 }
 
 .account-card-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 13px;
+  margin-bottom: 10px;
 }
 
 .account-card-heading h2 {
@@ -652,7 +758,7 @@ button {
   height: 42px;
   place-items: center;
   border-radius: 50%;
-  background: #e8e2f3;
+  background: var(--theme-surface);
   color: var(--purple);
   font-size: 22px;
 }
@@ -663,7 +769,7 @@ button {
 }
 
 .account-card-title {
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   overflow: hidden;
   font-size: 14px;
   font-weight: 650;
@@ -720,13 +826,13 @@ button {
 .account-panel {
   min-height: 286px;
   padding: 22px;
-  border: 1px solid #e5dff0;
+  border: 1px solid var(--theme-line);
   border-radius: 20px;
   background:
     radial-gradient(rgba(170, 153, 118, 0.1) 0.65px, transparent 0.8px),
     #fffefa;
   background-size: 6px 6px, 100% 100%;
-  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+  box-shadow: 0 8px 28px hsl(var(--theme-h) 22% 30% / 0.08);
 }
 
 .account-loading {
@@ -767,7 +873,7 @@ button {
   margin-bottom: 22px;
   padding: 4px;
   border-radius: 12px;
-  background: #f1eef7;
+  background: var(--theme-surface);
 }
 
 .auth-switch button {
@@ -782,7 +888,7 @@ button {
 .auth-switch button.active {
   background: var(--card);
   color: var(--text);
-  box-shadow: 0 2px 8px rgba(84, 70, 110, 0.1);
+  box-shadow: 0 2px 8px hsl(var(--theme-h) 22% 34% / 0.1);
   font-weight: 650;
 }
 
@@ -806,7 +912,7 @@ button {
   width: 100%;
   height: 45px;
   padding: 0 13px;
-  border: 1px solid #ded8eb;
+  border: 1px solid var(--theme-line);
   border-radius: 11px;
   outline: none;
   background: rgba(255, 255, 255, 0.9);
@@ -816,7 +922,7 @@ button {
 
 .auth-form input:focus {
   border-color: var(--purple);
-  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.11);
+  box-shadow: 0 0 0 3px hsl(var(--theme-h) 27% 53% / 0.11);
 }
 
 .auth-submit,
@@ -831,8 +937,8 @@ button {
 .auth-submit {
   margin-top: 20px;
   border: 0;
-  background: linear-gradient(135deg, #8174b6, #655890);
-  box-shadow: 0 4px 12px rgba(113, 101, 168, 0.2);
+  background: linear-gradient(135deg, var(--theme-bright), var(--theme-strong));
+  box-shadow: 0 4px 12px hsl(var(--theme-h) 27% 53% / 0.2);
   color: #fff;
 }
 
@@ -969,13 +1075,13 @@ button {
 
 .report-card {
   padding: 20px;
-  border: 1px solid #e5dff0;
+  border: 1px solid var(--theme-line);
   border-radius: 20px;
   background:
     radial-gradient(rgba(170, 153, 118, 0.12) 0.65px, transparent 0.8px),
     #fffefa;
   background-size: 6px 6px, 100% 100%;
-  box-shadow: 0 8px 28px rgba(65, 52, 88, 0.08);
+  box-shadow: 0 8px 28px hsl(var(--theme-h) 22% 30% / 0.08);
 }
 
 .report-heading {
@@ -1004,7 +1110,7 @@ button {
   height: 42px;
   place-items: center;
   border-radius: 50%;
-  background: #eeeaf7;
+  background: var(--theme-surface);
   color: var(--purple);
   font-size: 24px;
 }
@@ -1020,8 +1126,8 @@ button {
   min-height: 44px;
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, #8174b6, #655890);
-  box-shadow: 0 4px 12px rgba(113, 101, 168, 0.2);
+  background: linear-gradient(135deg, var(--theme-bright), var(--theme-strong));
+  box-shadow: 0 4px 12px hsl(var(--theme-h) 27% 53% / 0.2);
   color: #fff;
   font: inherit;
   font-size: 14px;
@@ -1097,7 +1203,7 @@ button {
   margin-top: 8px;
   padding: 10px;
   border-radius: 8px;
-  background: #f4f1f8;
+  background: var(--theme-surface);
   color: #53496f;
   font: 11px/1.8 Consolas, monospace;
   overflow-wrap: anywhere;
@@ -1112,8 +1218,8 @@ button {
   padding: 4px;
   background: var(--card);
   border-radius: 10px;
-  border: 1px solid rgba(220, 214, 238, 0.7);
-  box-shadow: 0 6px 20px rgba(113, 101, 168, 0.2);
+  border: 1px solid hsl(var(--theme-h) 42% 89% / 0.7);
+  box-shadow: 0 6px 20px hsl(var(--theme-h) 27% 53% / 0.2);
 }
 
 .context-menu-item {
@@ -1187,7 +1293,7 @@ button {
 }
 
 .cal-arrow:hover:not(:disabled) {
-  background: #e8e4f4;
+  background: var(--theme-surface);
   color: var(--purple);
 }
 
@@ -1228,15 +1334,15 @@ button {
 }
 
 .cal-today-btn:hover {
-  background: #e8e4f4;
+  background: var(--theme-surface);
 }
 
 /* 月历卡片（横竖线完整连接） */
 .cal-card {
   background: var(--card);
   border-radius: 18px;
-  border: 1px solid #e0dbee;
-  box-shadow: 0 2px 12px rgba(113, 101, 168, 0.08);
+  border: 1px solid var(--theme-line);
+  box-shadow: 0 2px 12px hsl(var(--theme-h) 27% 53% / 0.08);
   padding: 0;
   overflow: hidden;
 }
@@ -1252,7 +1358,7 @@ button {
   font-size: 11px;
   letter-spacing: 1px;
   color: var(--text-sub);
-  background: #f5f2fa;
+  background: var(--theme-surface);
   padding: 8px 0;
   border-right: 1px solid #e0dbee;
   border-bottom: 1px solid #e0dbee;
@@ -1295,12 +1401,12 @@ button {
 }
 
 .cal-day:hover {
-  background: #edeaf6;
+  background: var(--theme-surface);
 }
 
 /* 当日：紫色渐变标注 */
 .cal-day.today {
-  background: linear-gradient(135deg, #8a7cc0, #6c5f9e);
+  background: linear-gradient(135deg, var(--theme-bright), var(--theme-strong));
   font-weight: 700;
   color: #ffffff;
 }
@@ -1443,7 +1549,7 @@ button {
 
 .anniversary-dialog input:focus {
   border-color: var(--purple);
-  box-shadow: 0 0 0 3px rgba(113, 101, 168, 0.12);
+  box-shadow: 0 0 0 3px hsl(var(--theme-h) 27% 53% / 0.12);
 }
 
 .anniversary-actions {
@@ -1482,7 +1588,7 @@ button {
 /* ===== 预览页：打开的书 ===== */
 .pv-page {
   min-height: 100vh;
-  background: linear-gradient(160deg, #55496e 0%, #453b5e 55%, #38304e 100%);
+  background: linear-gradient(160deg, var(--cover) 0%, hsl(var(--theme-h) 23% 30%) 55%, hsl(var(--theme-h) 23% 26%) 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;

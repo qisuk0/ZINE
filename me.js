@@ -3,44 +3,25 @@ const REPORT_STORAGE_PREFIX = "zine_monthly_report_";
 const BOOKS_STORAGE_KEY = "zine_books_v1";
 const BOOK_SUMMARY_STORAGE_KEY = "zine_book_summary_v1";
 const generateButton = document.getElementById("generateReportBtn");
-const reportDescription = document.getElementById("reportDescription");
 const reportStatus = document.getElementById("reportStatus");
 const reportResult = document.getElementById("reportResult");
 const bookSummaryButton = document.getElementById("bookSummaryBtn");
 const bookSummaryStatus = document.getElementById("bookSummaryStatus");
 const bookSummaryResult = document.getElementById("bookSummaryResult");
 const accountCardEmail = document.getElementById("accountCardEmail");
-const accountCardStatus = document.getElementById("accountCardStatus");
 const accountCardLink = document.getElementById("accountCardLink");
-const accountCardMark = document.getElementById("accountCardMark");
 const now = new Date();
 const reportMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 let diariesByDate = {};
 
-reportDescription.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月 · 基于本月已保存的日记生成`;
-
 function renderAccountCard(snapshot) {
   if (snapshot.user) {
     accountCardEmail.textContent = snapshot.user.username ? `@${snapshot.user.username}` : "已登录账号";
-    accountCardStatus.textContent = snapshot.status === "syncing"
-      ? "正在把记录同步到账号…"
-      : snapshot.status === "error"
-        ? "云端暂时不可用，记录已保存在本机。"
-        : "书籍、日记和纪念日会随账号保存。";
-    accountCardLink.textContent = "管理账号";
-    accountCardLink.href = "account.html";
-    accountCardMark.textContent = "✓";
-    accountCardMark.classList.add("signed-in");
   } else {
-    accountCardEmail.textContent = "登录后，记录会跟着账号走";
-    accountCardStatus.textContent = snapshot.status === "unconfigured"
-      ? "填写 Supabase 公开密钥后即可开始同步。"
-      : "当前记录仅保存在这台设备。";
-    accountCardLink.textContent = "登录或创建账号";
-    accountCardLink.href = "account.html";
-    accountCardMark.textContent = "✦";
-    accountCardMark.classList.remove("signed-in");
+    accountCardEmail.textContent = "未登录";
   }
+  accountCardLink.textContent = "管理账号";
+  accountCardLink.href = "account.html";
 }
 
 function readDiaries() {
