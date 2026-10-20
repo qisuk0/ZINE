@@ -861,6 +861,13 @@ button {
   color: var(--purple);
 }
 
+.auth-hint {
+  margin-top: 12px;
+  color: var(--text-sub);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
 .account-status {
   min-height: 18px;
   margin-top: 12px;

@@ -38,12 +38,12 @@ window.ZINE_SUPABASE_CONFIG = {
   - `https://cosmic-douhua-71f371.netlify.app/**`
   - `http://127.0.0.1:8765/**`（本地测试时使用）
 
-## 4. 选择注册确认方式
+## 4. 关闭邮箱确认（用户名注册必需）
 
 在 `Authentication` -> `Providers` -> `Email` 中：
 
-- 希望用户注册后必须验证邮箱：保持 `Confirm email` 开启。
-- 作业演示时希望注册后直接登录：关闭 `Confirm email`。
+- 关闭 `Confirm email`。
+- 当前网站的账号形式是“用户名 + 密码”，不需要用户接收邮件。
 
 ## 5. 重新部署
 

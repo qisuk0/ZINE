@@ -16,7 +16,7 @@ reportDescription.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月
 
 function renderAccountCard(snapshot) {
   if (snapshot.user) {
-    accountCardEmail.textContent = snapshot.user.email || "已登录账号";
+    accountCardEmail.textContent = snapshot.user.username ? `@${snapshot.user.username}` : "已登录账号";
     accountCardStatus.textContent = snapshot.status === "syncing"
       ? "正在把记录同步到账号…"
       : snapshot.status === "error"

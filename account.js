@@ -5,10 +5,9 @@ const recoveryView = document.getElementById("recoveryView");
 const loginModeButton = document.getElementById("loginModeBtn");
 const signupModeButton = document.getElementById("signupModeBtn");
 const authForm = document.getElementById("authForm");
-const authEmail = document.getElementById("authEmail");
+const authUsername = document.getElementById("authUsername");
 const authPassword = document.getElementById("authPassword");
 const authSubmitButton = document.getElementById("authSubmitBtn");
-const forgotPasswordButton = document.getElementById("forgotPasswordBtn");
 const authStatus = document.getElementById("authStatus");
 const accountEmail = document.getElementById("accountEmail");
 const cloudState = document.getElementById("cloudState");
@@ -47,7 +46,8 @@ function setAuthMode(mode) {
   signupModeButton.setAttribute("aria-selected", String(signingUp));
   authSubmitButton.textContent = signingUp ? "创建账号" : "登录";
   authPassword.autocomplete = signingUp ? "new-password" : "current-password";
-  forgotPasswordButton.hidden = signingUp;
+  authUsername.value = "";
+  authPassword.value = "";
   setStatus(authStatus, "");
 }
 
@@ -94,7 +94,7 @@ function render(snapshot) {
     return;
   }
 
-  accountEmail.textContent = snapshot.user.email || "已登录账号";
+  accountEmail.textContent = snapshot.user.username ? `@${snapshot.user.username}` : "已登录账号";
   cloudState.textContent = statusText[snapshot.status] || snapshot.message || "已连接";
   lastSyncTime.textContent = formatSyncTime(snapshot.lastSyncAt);
   syncNowButton.disabled = snapshot.status === "syncing";
@@ -107,7 +107,8 @@ function errorMessage(error) {
     [/email not confirmed/i, "请先打开验证邮件并确认邮箱。"],
     [/user already registered/i, "这个邮箱已经注册，请直接登录。"],
     [/password should be at least/i, "密码至少需要 6 个字符。"],
-    [/invalid email/i, "请输入有效的邮箱地址。"],
+    [/invalid email/i, "请输入有效的用户名。"],
+    [/用户名需要/i, "用户名需要 3-24 位，只能使用字母、数字和下划线。"],
     [/rate limit|too many/i, "操作次数过多，请稍后再试。"],
     [/network|fetch/i, "无法连接账号服务，请检查网络。"],
   ];
@@ -120,25 +121,31 @@ signupModeButton.addEventListener("click", () => setAuthMode("signup"));
 
 authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const email = authEmail.value.trim();
+  const username = authUsername.value.trim();
   const password = authPassword.value;
   authSubmitButton.disabled = true;
   setStatus(authStatus, authMode === "signup" ? "正在创建账号…" : "正在登录…");
 
   try {
     if (authMode === "signup") {
-      const { data, error } = await ZineCloud.signUp(email, password);
+      const { data, error } = await ZineCloud.signUp(username, password);
       if (error) throw error;
       if (data.session) {
+        setStatus(accountStatus, "");
         setStatus(authStatus, "账号已创建，正在同步记录…");
       } else {
-        setStatus(authStatus, "验证邮件已发送，请打开邮件完成确认后再登录。");
-        authPassword.value = "";
+        setStatus(
+          authStatus,
+          "邮箱确认还没有关闭。请先在 Supabase 关闭 Confirm email，再重新创建账号。",
+          true
+        );
+        return;
       }
     } else {
-      const { error } = await ZineCloud.signIn(email, password);
+      const { error } = await ZineCloud.signIn(username, password);
       if (error) throw error;
       authPassword.value = "";
+      setStatus(accountStatus, "");
       setStatus(authStatus, "登录成功。");
     }
   } catch (error) {
@@ -149,28 +156,6 @@ authForm.addEventListener("submit", async (event) => {
       accountSnapshot
       && (accountSnapshot.status === "unconfigured" || accountSnapshot.status === "offline")
     );
-  }
-});
-
-forgotPasswordButton.addEventListener("click", async () => {
-  const email = authEmail.value.trim();
-  if (!email) {
-    setStatus(authStatus, "请先填写邮箱地址。", true);
-    authEmail.focus();
-    return;
-  }
-
-  forgotPasswordButton.disabled = true;
-  setStatus(authStatus, "正在发送重设密码邮件…");
-  try {
-    const { error } = await ZineCloud.resetPassword(email);
-    if (error) throw error;
-    setStatus(authStatus, "重设密码邮件已发送，请检查邮箱。");
-  } catch (error) {
-    console.error("Unable to send the ZINE password reset email.", error);
-    setStatus(authStatus, errorMessage(error), true);
-  } finally {
-    forgotPasswordButton.disabled = false;
   }
 });
 

@@ -12,7 +12,7 @@
     <header class="account-header">
       <p class="diary-eyebrow">YOUR PRIVATE SPACE</p>
       <h1>账号与同步</h1>
-      <p>登录后，日记、书籍和纪念日会保存到你的账号。</p>
+      <p>输入用户名和密码，就可以开始使用自己的记录空间。</p>
     </header>
 
     <main class="account-panel" id="accountPanel" aria-live="polite">
@@ -27,13 +27,14 @@
           <button id="signupModeBtn" type="button" role="tab" aria-selected="false">创建账号</button>
         </div>
         <form class="auth-form" id="authForm">
-          <label for="authEmail">邮箱</label>
-          <input id="authEmail" type="email" autocomplete="email" maxlength="254" required />
+          <label for="authUsername">用户名</label>
+          <input id="authUsername" type="text" autocomplete="username" minlength="3" maxlength="24" placeholder="例如：xiaoming_01" required />
           <label for="authPassword">密码</label>
           <input id="authPassword" type="password" autocomplete="current-password" minlength="6" maxlength="72" required />
           <button class="auth-submit" id="authSubmitBtn" type="submit">登录</button>
-          <button class="auth-link" id="forgotPasswordBtn" type="button">忘记密码</button>
+          <button class="auth-link" id="forgotPasswordBtn" type="button" hidden>使用邮箱找回</button>
         </form>
+        <p class="auth-hint">用户名可使用 3-24 位字母、数字或下划线；密码至少 6 位。</p>
         <p class="account-status" id="authStatus" role="status" aria-live="polite"></p>
       </section>
 

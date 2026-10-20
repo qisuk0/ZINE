@@ -4,6 +4,7 @@
   const TABLE_NAME = "zine_records";
   const BUCKET_NAME = "zine-media";
   const CLOUD_PREFIX = "zine_";
+  const SYNTHETIC_EMAIL_DOMAIN = "users.zine.example.com";
   const CACHE_OWNER_KEY = "__zine_cache_owner_v1";
   const config = window.ZINE_SUPABASE_CONFIG || {};
   const listeners = new Set();
@@ -40,6 +41,9 @@
       user: state.user ? {
         id: state.user.id,
         email: state.user.email || "",
+        username: (state.user.user_metadata && state.user.user_metadata.username)
+          || (state.user.email || "").split("@")[0]
+          || "",
       } : null,
     };
   }
@@ -356,20 +360,39 @@
     return data;
   }
 
-  async function signUp(email, password) {
+  function normalizeUsername(value) {
+    const username = String(value || "").trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+      throw new Error("用户名需要 3-24 位，只能使用字母、数字和下划线。");
+    }
+    return username;
+  }
+
+  function loginEmail(value) {
+    const identifier = String(value || "").trim().toLowerCase();
+    if (identifier.includes("@")) return identifier;
+    return `${normalizeUsername(identifier)}@${SYNTHETIC_EMAIL_DOMAIN}`;
+  }
+
+  async function signUp(usernameValue, password) {
     if (!client) throw new Error("账号服务尚未配置。");
+    const username = normalizeUsername(usernameValue);
     return client.auth.signUp({
-      email,
+      email: `${username}@${SYNTHETIC_EMAIL_DOMAIN}`,
       password,
       options: {
+        data: { username },
         emailRedirectTo: `${window.location.origin}/account.html`,
       },
     });
   }
 
-  async function signIn(email, password) {
+  async function signIn(identifier, password) {
     if (!client) throw new Error("账号服务尚未配置。");
-    const result = await client.auth.signInWithPassword({ email, password });
+    const result = await client.auth.signInWithPassword({
+      email: loginEmail(identifier),
+      password,
+    });
     if (!result.error) await handleSession(result.data.session, "SIGNED_IN");
     return result;
   }
