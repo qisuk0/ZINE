@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "zine_theme_v1";
-  const themes = ["red", "orange", "yellow", "green", "blue", "purple"];
+  const themes = ["red", "orange", "mono", "green", "blue", "purple"];
 
   function readTheme() {
     try {
