@@ -85,6 +85,19 @@ html[data-theme="mono"] .pv-page {
   background: linear-gradient(160deg, #4a4a4a 0%, #383838 55%, #292929 100%);
 }
 
+html[data-theme="mono"] .recap-hero {
+  background: linear-gradient(145deg, #5c5c5c, #222222);
+}
+
+html[data-theme="mono"] .recap-day.active {
+  background: rgba(42, 42, 42, var(--heat));
+}
+
+html[data-theme="mono"] .annual-report {
+  border-color: #d2d2d2;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
 body {
   font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
   background: var(--bg);
@@ -686,41 +699,42 @@ button {
 }
 
 .theme-menu button {
+  --swatch-color: var(--purple);
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 3px solid var(--card);
+  border: 3px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--theme-line);
+  background: var(--swatch-color);
+  box-shadow: 0 0 0 1px var(--purple);
 }
 
 .theme-menu button[aria-checked="true"] {
-  box-shadow: 0 0 0 2px var(--text);
+  box-shadow: 0 0 0 3px var(--swatch-color);
 }
 
 .theme-menu [data-theme-name="red"] {
-  background: hsl(5 66% 55%);
+  --swatch-color: hsl(5 66% 55%);
 }
 
 .theme-menu [data-theme-name="orange"] {
-  background: hsl(24 76% 53%);
+  --swatch-color: hsl(24 76% 53%);
 }
 
 .theme-menu [data-theme-name="mono"] {
-  border-color: #000;
-  background: #000;
+  --swatch-color: #000;
 }
 
 .theme-menu [data-theme-name="green"] {
-  background: hsl(145 42% 46%);
+  --swatch-color: hsl(145 42% 46%);
 }
 
 .theme-menu [data-theme-name="blue"] {
-  background: hsl(214 55% 52%);
+  --swatch-color: hsl(214 55% 52%);
 }
 
 .theme-menu [data-theme-name="purple"] {
-  background: hsl(251 36% 57%);
+  --swatch-color: hsl(251 36% 57%);
 }
 
 .me-main .account-card,
@@ -1103,6 +1117,32 @@ button {
 .report-heading h2 {
   font-family: Georgia, "Songti SC", serif;
   font-size: 20px;
+}
+
+.recap-toggle {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--theme-line);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--purple);
+}
+
+.recap-toggle[hidden] {
+  display: none;
+}
+
+.recap-toggle svg {
+  transform: rotate(180deg);
+  transition: transform 0.18s;
+}
+
+.recap-toggle.collapsed svg {
+  transform: rotate(0deg);
 }
 
 .report-icon {

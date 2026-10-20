@@ -8,6 +8,8 @@ const reportResult = document.getElementById("reportResult");
 const bookSummaryButton = document.getElementById("bookSummaryBtn");
 const bookSummaryStatus = document.getElementById("bookSummaryStatus");
 const bookSummaryResult = document.getElementById("bookSummaryResult");
+const bookSummaryToggle = document.getElementById("bookSummaryToggle");
+const reportToggle = document.getElementById("reportToggle");
 const accountCardEmail = document.getElementById("accountCardEmail");
 const accountCardLink = document.getElementById("accountCardLink");
 const now = new Date();
@@ -62,6 +64,26 @@ function saveReportRecord(key, payload) {
     : (localStorage.setItem(key, JSON.stringify(payload)), true);
 }
 
+function recapToggleFor(element) {
+  return element === reportResult ? reportToggle : bookSummaryToggle;
+}
+
+function setRecapExpanded(element, expanded) {
+  const toggle = recapToggleFor(element);
+  element.hidden = !expanded;
+  toggle.hidden = false;
+  toggle.classList.toggle("collapsed", !expanded);
+  toggle.setAttribute("aria-expanded", String(expanded));
+  toggle.setAttribute("aria-label", expanded ? "收起总结报告" : "展开总结报告");
+}
+
+function bindRecapToggle(element) {
+  const toggle = recapToggleFor(element);
+  toggle.addEventListener("click", () => {
+    setRecapExpanded(element, element.hidden);
+  });
+}
+
 function narrativeHtml(narrative, pending = false) {
   const content = pending ? "正在生成回顾文字…" : escapeReportHtml(narrative).replace(/\n/g, "<br>");
   return `<p class="recap-narrative${pending ? " pending" : ""}" data-recap-narrative>${content}</p>`;
@@ -77,7 +99,7 @@ function showLegacyRecap(element, text, generatedAt, label) {
       </div>
       <div class="recap-footer">ZINE · ${new Date(generatedAt).toLocaleDateString("zh-CN")}</div>
     </div>`;
-  element.hidden = false;
+  setRecapExpanded(element, true);
   element.dataset.generatedAt = generatedAt;
 }
 
@@ -157,7 +179,7 @@ function renderMonthlyRecap(stats, generatedAt, narrative = "", pending = false)
       </section>
       <div class="recap-footer">ZINE · YOUR LITTLE JOURNAL</div>
     </div>`;
-  reportResult.hidden = false;
+  setRecapExpanded(reportResult, true);
   reportResult.dataset.generatedAt = generatedAt;
 }
 
@@ -379,7 +401,7 @@ function renderBookRecap(stats, generatedAt, narrative = "", pending = false) {
       </section>
       <div class="recap-footer">ZINE · YOUR ANNUAL RECAP</div>
     </div>`;
-  bookSummaryResult.hidden = false;
+  setRecapExpanded(bookSummaryResult, true);
   bookSummaryResult.dataset.generatedAt = generatedAt;
 }
 
@@ -477,6 +499,8 @@ async function startMePage() {
   loadSavedBookSummary();
   generateButton.addEventListener("click", generateReport);
   bookSummaryButton.addEventListener("click", generateBookSummary);
+  bindRecapToggle(reportResult);
+  bindRecapToggle(bookSummaryResult);
 }
 
 startMePage();

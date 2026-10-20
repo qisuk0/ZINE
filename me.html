@@ -38,6 +38,11 @@
       <section class="report-card" aria-labelledby="bookSummaryTitle">
         <div class="report-heading">
           <h2 id="bookSummaryTitle">ZINE总结</h2>
+          <button class="recap-toggle" id="bookSummaryToggle" type="button" aria-label="收起 ZINE 总结" aria-expanded="true" hidden>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </button>
         </div>
         <button class="report-generate" id="bookSummaryBtn" type="button">生成我的集总结</button>
         <p class="report-status" id="bookSummaryStatus" role="status" aria-live="polite"></p>
@@ -47,6 +52,11 @@
       <section class="report-card" aria-labelledby="reportTitle">
         <div class="report-heading">
           <h2 id="reportTitle">本月日记总结</h2>
+          <button class="recap-toggle" id="reportToggle" type="button" aria-label="收起本月日记总结" aria-expanded="true" hidden>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </button>
         </div>
         <button class="report-generate" id="generateReportBtn" type="button">生成日记报告</button>
         <p class="report-status" id="reportStatus" role="status" aria-live="polite"></p>
